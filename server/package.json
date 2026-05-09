@@ -1,0 +1,20 @@
+{
+  "name": "sanguosha-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch index.ts",
+    "build:frontend": "cd .. && npx vite build --config vite.config.online.ts && node -e \"const{cpSync,existsSync,mkdirSync,rmSync}=require('fs');const{join}=require('path');const d='server/public';if(existsSync(d))rmSync(d,{recursive:true});mkdirSync(d,{recursive:true});cpSync('dist',d,{recursive:true});console.log('Copied to server/public/')\"",
+    "build:server": "esbuild index.ts --bundle --platform=node --format=esm --outfile=dist/server.js --external:ws",
+    "build": "npm run build:frontend && npm run build:server",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "tsx": "^4.19.0",
+    "typescript": "~6.0.2"
+  }
+}

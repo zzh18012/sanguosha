@@ -1,0 +1,7 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd server && npm install && npm run build"
+startCommand = "cd server && npm start"
+
+[deploy]
+numReplicas = 1
