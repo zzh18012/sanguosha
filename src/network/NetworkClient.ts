@@ -48,21 +48,46 @@ export class NetworkClient {
 
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
+      let settled = false;
+
+      const fail = (reason: string) => {
+        if (settled) return;
+        settled = true;
+        this._connected = false;
+        reject(new Error(reason));
+      };
+
+      const timeout = setTimeout(() => fail('Connection timeout'), 10000);
+
       try {
         this.ws = new WebSocket(this.url);
       } catch (e) {
+        clearTimeout(timeout);
         reject(e);
         return;
       }
 
       this.ws.onopen = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
         this._connected = true;
         this.startHeartbeat();
         resolve();
       };
 
       this.ws.onerror = () => {
-        this._connected = false;
+        fail('WebSocket connection failed');
+      };
+
+      this.ws.onclose = () => {
+        if (!this._connected) {
+          fail('WebSocket closed before connecting');
+        } else {
+          this._connected = false;
+          this.stopHeartbeat();
+          this.scheduleReconnect();
+        }
       };
 
       this.ws.onmessage = (event) => {
@@ -83,11 +108,6 @@ export class NetworkClient {
         }
       };
 
-      this.ws.onclose = () => {
-        this._connected = false;
-        this.stopHeartbeat();
-        this.scheduleReconnect();
-      };
     });
   }
 
