@@ -23,6 +23,10 @@ const MIME: Record<string, string> = {
 };
 
 function serveStatic(_req: IncomingMessage, res: ServerResponse): void {
+  // Log any request that looks like a WebSocket upgrade that reached wrong handler
+  if (_req.headers.upgrade) {
+    console.log('[HTTP request with upgrade header!]', _req.url, _req.headers.upgrade);
+  }
   const url = _req.url === '/' ? '/index.html' : _req.url || '/index.html';
   const filePath = join(PUBLIC_DIR, url);
   if (existsSync(filePath)) {
@@ -46,6 +50,11 @@ function serveStatic(_req: IncomingMessage, res: ServerResponse): void {
 const httpServer = createServer(serveStatic);
 
 // WebSocket server
+// Log upgrade events to diagnose proxy issues
+httpServer.on('upgrade', (req, _socket, _head) => {
+  console.log('[HTTP Upgrade]', req.url, 'headers:', JSON.stringify(req.headers));
+});
+
 const wss = new WebSocketServer({ server: httpServer });
 
 wss.on('connection', (ws: WebSocket, req) => {
