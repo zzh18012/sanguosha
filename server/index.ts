@@ -49,13 +49,16 @@ function serveStatic(_req: IncomingMessage, res: ServerResponse): void {
 // HTTP server — serves static frontend + health fallback
 const httpServer = createServer(serveStatic);
 
-// WebSocket server
-// Log upgrade events to diagnose proxy issues
-httpServer.on('upgrade', (req, _socket, _head) => {
-  console.log('[HTTP Upgrade]', req.url, 'headers:', JSON.stringify(req.headers));
-});
+// WebSocket server — manual upgrade handling for proxy compatibility
+const wss = new WebSocketServer({ noServer: true });
 
-const wss = new WebSocketServer({ server: httpServer });
+httpServer.on('upgrade', (request, socket, head) => {
+  console.log('[WS Upgrade]', request.url);
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    console.log('[WS Upgrade] connection emitted');
+    wss.emit('connection', ws, request);
+  });
+});
 
 wss.on('connection', (ws: WebSocket, req) => {
   console.log('[WS] New connection, total clients:', wss.clients.size);
