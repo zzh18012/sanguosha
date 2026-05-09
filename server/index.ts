@@ -48,7 +48,8 @@ const httpServer = createServer(serveStatic);
 // WebSocket server
 const wss = new WebSocketServer({ server: httpServer });
 
-wss.on('connection', (ws: WebSocket) => {
+wss.on('connection', (ws: WebSocket, req) => {
+  console.log('[WS] New connection, total clients:', wss.clients.size);
   ws.on('message', (raw: RawData) => {
     let msg: { type: string; [key: string]: unknown };
     try {
