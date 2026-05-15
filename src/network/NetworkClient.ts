@@ -37,6 +37,7 @@ export class NetworkClient {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private pingInterval: ReturnType<typeof setInterval> | null = null;
   private _connected = false;
+  private _connecting = false;
 
   constructor(url: string) {
     this.url = url;
@@ -48,11 +49,21 @@ export class NetworkClient {
 
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
+      if (this._connecting) {
+        reject(new Error('Already connecting'));
+        return;
+      }
       let settled = false;
+      this._connecting = true;
+
+      const cleanup = () => {
+        this._connecting = false;
+      };
 
       const fail = (reason: string) => {
         if (settled) return;
         settled = true;
+        cleanup();
         this._connected = false;
         reject(new Error(reason));
       };
@@ -63,6 +74,7 @@ export class NetworkClient {
         this.ws = new WebSocket(this.url);
       } catch (e) {
         clearTimeout(timeout);
+        cleanup();
         reject(e);
         return;
       }
@@ -71,6 +83,7 @@ export class NetworkClient {
         if (settled) return;
         settled = true;
         clearTimeout(timeout);
+        cleanup();
         this._connected = true;
         this.startHeartbeat();
         resolve();
@@ -142,6 +155,7 @@ export class NetworkClient {
     this.ws?.close();
     this.ws = null;
     this._connected = false;
+    this._connecting = false;
   }
 
   private startHeartbeat(): void {
@@ -156,10 +170,12 @@ export class NetworkClient {
   }
 
   private scheduleReconnect(): void {
-    if (this.reconnectTimer) return;
+    if (this.reconnectTimer || this._connecting) return;
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
-      this.connect().catch(() => {});
+      if (!this._connecting && !this._connected) {
+        this.connect().catch(() => {});
+      }
     }, 3000);
   }
 }

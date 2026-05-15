@@ -27,7 +27,7 @@ const skill_jiuyuan: SkillDefinition = {
   description: '主公技，其他吴势力角色使用桃指定你为目标时，回复+1。',
   triggers: [{ kind: 'on_healed' }],
   execute: (ctx) => {
-    // Wu allies heal ruler +1 extra
+    // Handled in ActionResolver.resolveUseTaoOther
     return { actions: [] };
   },
   isMandatory: false,
@@ -148,7 +148,7 @@ const skill_qianxun: SkillDefinition = {
   description: '锁定技，你不能成为顺手牵羊和乐不思蜀的目标。',
   triggers: [{ kind: 'passive' }],
   execute: (ctx) => {
-    // Immune to 顺手牵羊 and 乐不思蜀
+    // Engine handles targeting immunity in RulesEngine
     return { actions: [] };
   },
   isMandatory: true,
@@ -201,8 +201,30 @@ const skill_liuli: SkillDefinition = {
   description: '当你成为杀的目标时，你可以弃置一张牌并将此杀转移给你攻击范围内的另一名角色。',
   triggers: [{ kind: 'on_sha_targeted' }],
   execute: (ctx) => {
-    // Redirect 杀 to another target
-    return { actions: [] };
+    // Simplified: discard 1 card, redirect damage to another player
+    const state = ctx.gameState;
+    const player = state.players.find(p => p.id === ctx.sourcePlayerId);
+    if (!player || player.hand.length === 0) return { actions: [] };
+
+    const triggerAction = ctx.triggerEvent;
+    if (!triggerAction || triggerAction.type !== 'PLAY_CARD') return { actions: [] };
+
+    const shaSourceId = triggerAction.playerId;
+    const others = state.players.filter(
+      p => p.aliveStatus !== 'dead' && p.id !== ctx.sourcePlayerId && p.id !== shaSourceId
+    );
+    if (others.length === 0) return { actions: [] };
+
+    // Discard 1 card as cost
+    const discardCard = player.hand[player.hand.length - 1];
+    const idx = player.hand.findIndex(c => c.instanceId === discardCard.instanceId);
+    if (idx !== -1) {
+      const [card] = player.hand.splice(idx, 1);
+      state.discardPile.push(card);
+    }
+
+    // Deal 1 damage to new target (simulating redirected sha)
+    return { actions: [{ type: 'DEAL_DAMAGE', sourceId: shaSourceId, targetId: others[0].id, amount: 1 }] };
   },
   isMandatory: false,
 };

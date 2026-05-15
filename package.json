@@ -13,8 +13,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "image-size": "^2.0.2",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

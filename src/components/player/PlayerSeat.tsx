@@ -2,6 +2,7 @@
 // Player seat - shows character portrait, HP, equipment, status
 // ============================================================
 
+import { useState } from 'react';
 import { useGame } from '../../store/GameContext';
 import { findPlayer } from '../../engine/core/GameState';
 import { getCharacterInfo } from '../../data/characterDefinitions';
@@ -21,6 +22,7 @@ export function PlayerSeat({ playerId, position, isCurrent, onClick, highlight }
   if (!player || player.aliveStatus === 'dead') return null;
 
   const charInfo = getCharacterInfo(player.characterId);
+  const [portraitError, setPortraitError] = useState(false);
   const hpHearts = Array.from({ length: player.maxHp }, (_, i) => i < player.hp);
 
   return (
@@ -38,8 +40,12 @@ export function PlayerSeat({ playerId, position, isCurrent, onClick, highlight }
 
       <div className="seat-character">
         <div className="char-portrait">
-          <div className="char-portrait-placeholder" data-kingdom={player.kingdom}>
-            {charInfo?.name?.[0] || '?'}
+          <div className={`char-portrait-frame char-portrait-${player.kingdom}`}>
+            {charInfo?.portraitUrl && !portraitError ? (
+              <img src={charInfo.portraitUrl} alt={charInfo?.name} className="char-portrait-img" onError={() => setPortraitError(true)} />
+            ) : (
+              <span className="char-portrait-name">{charInfo?.name || '?'}</span>
+            )}
           </div>
         </div>
         <div className="char-info">

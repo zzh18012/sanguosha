@@ -1,0 +1,21 @@
+# ninja log v7
+2	76	8005187082178941	uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-mkdir	3703ca40b1b04509
+2	76	8005187082178941	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-mkdir	3703ca40b1b04509
+76	97372	8005188055129609	uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-download	9196af701827edfc
+76	97372	8005188055129609	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-download	9196af701827edfc
+97374	97500	8005188055176742	uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-update	b3e8f3f6f2a88be5
+97374	97500	8005188055176742	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-update	b3e8f3f6f2a88be5
+97500	97574	8005188057161878	uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-patch	7fde2926d3dbe297
+97500	97574	8005188057161878	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-patch	7fde2926d3dbe297
+97574	97645	8005188057868257	uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-configure	fd1cdc4ecf27f2f4
+97574	97645	8005188057868257	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-configure	fd1cdc4ecf27f2f4
+97645	97724	8005188058652891	uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-build	1195678041f4ca35
+97645	97724	8005188058652891	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-build	1195678041f4ca35
+97724	97801	8005188059388231	uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-install	583c3f5000564d93
+97724	97801	8005188059388231	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-install	583c3f5000564d93
+97801	97870	8005188060092676	uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-test	b38e0a0890b5d758
+97801	97870	8005188060092676	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-test	b38e0a0890b5d758
+97871	97971	8005188061115417	CMakeFiles/uwebsockets-populate-complete	45106f80e1908931
+97871	97971	8005188061115417	uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-done	45106f80e1908931
+97871	97971	8005188061115417	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/CMakeFiles/uwebsockets-populate-complete	45106f80e1908931
+97871	97971	8005188061115417	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-done	45106f80e1908931

@@ -51,8 +51,10 @@ export type GameAction =
   // 借刀杀人 responses
   | { type: 'JIEDAO_ATTACK'; playerId: string; targetId: string }
   | { type: 'JIEDAO_GIVE_WEAPON'; playerId: string }
-  // 铁索连环
-  | { type: 'TOGGLE_CHAIN'; playerId: string; targetIds: string[] };
+  // Recast (重铸) — discard to draw
+  | { type: 'RECAST_CARD'; playerId: string; cardId: string }
+  // Pass on saving a dying player
+  | { type: 'PASS_SAVE_DYING'; playerId: string };
 
 // Helper to describe an action in Chinese (for game log)
 export function describeAction(action: GameAction): string {
@@ -75,6 +77,8 @@ export function describeAction(action: GameAction): string {
     case 'ENTER_DYING': return `进入濒死状态`;
     case 'PLAYER_DIED': return `死亡`;
     case 'DISCARD_TO_MAX_HP': return `弃牌至体力上限`;
+    case 'RECAST_CARD': return `重铸了牌`;
+    case 'PASS_SAVE_DYING': return `放弃救援`;
     default: return `执行了操作`;
   }
 }

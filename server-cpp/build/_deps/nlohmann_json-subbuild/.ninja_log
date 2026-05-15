@@ -1,0 +1,21 @@
+# ninja log v7
+2	73	8005186817392991	nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-mkdir	a864d61751b80f3f
+2	73	8005186817392991	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/nlohmann_json-subbuild/nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-mkdir	a864d61751b80f3f
+73	25612	8005187072776965	nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-download	ba0c7666ff45ee3b
+73	25612	8005187072776965	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/nlohmann_json-subbuild/nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-download	ba0c7666ff45ee3b
+25614	25746	8005187072866360	nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-update	a09dab04aba9d9e4
+25614	25746	8005187072866360	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/nlohmann_json-subbuild/nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-update	a09dab04aba9d9e4
+25746	25825	8005187074902003	nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-patch	dc949e3c6af1a5a7
+25746	25825	8005187074902003	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/nlohmann_json-subbuild/nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-patch	dc949e3c6af1a5a7
+25825	25910	8005187075716076	nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-configure	7b36d87d7761a79d
+25825	25910	8005187075716076	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/nlohmann_json-subbuild/nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-configure	7b36d87d7761a79d
+25910	25983	8005187076480630	nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-build	55b2cae87084ee66
+25910	25983	8005187076480630	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/nlohmann_json-subbuild/nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-build	55b2cae87084ee66
+25983	26052	8005187077136839	nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-install	6905103688347a07
+25983	26052	8005187077136839	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/nlohmann_json-subbuild/nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-install	6905103688347a07
+26052	26125	8005187077916340	nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-test	60c4f615bf0c05c
+26052	26125	8005187077916340	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/nlohmann_json-subbuild/nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-test	60c4f615bf0c05c
+26125	26222	8005187078877788	CMakeFiles/nlohmann_json-populate-complete	aa7e480268c70bee
+26125	26222	8005187078877788	nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-done	aa7e480268c70bee
+26125	26222	8005187078877788	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/nlohmann_json-subbuild/CMakeFiles/nlohmann_json-populate-complete	aa7e480268c70bee
+26125	26222	8005187078877788	C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/nlohmann_json-subbuild/nlohmann_json-populate-prefix/src/nlohmann_json-populate-stamp/nlohmann_json-populate-done	aa7e480268c70bee

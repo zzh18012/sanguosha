@@ -1,0 +1,3 @@
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/CMakeFiles/uwebsockets-populate.dir
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/CMakeFiles/edit_cache.dir
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/CMakeFiles/rebuild_cache.dir

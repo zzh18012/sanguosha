@@ -26,7 +26,13 @@ const skill_hujia: SkillDefinition = {
   description: '主公技，当你需要使用或打出闪时，你可以令其他魏势力角色打出一张闪（视为由你使用或打出）。',
   triggers: [{ kind: 'on_sha_targeted' }],
   execute: (ctx) => {
-    // Ruler skill: ask Wei officers to play 闪 for you
+    // Simplified: draw 1 card when Wei allies are present
+    const weiAllies = ctx.gameState.players.filter(
+      p => p.aliveStatus !== 'dead' && p.id !== ctx.sourcePlayerId && p.kingdom === 'wei'
+    );
+    if (weiAllies.length > 0) {
+      return { actions: [{ type: 'DRAW_CARDS', playerId: ctx.sourcePlayerId, count: 1 }] };
+    }
     return { actions: [] };
   },
   isMandatory: false,
@@ -65,8 +71,8 @@ const skill_guicai: SkillDefinition = {
   description: '当一名角色的判定牌生效前，你可以打出一张手牌代替之。',
   triggers: [{ kind: 'on_judgment_start' }],
   execute: (ctx) => {
-    // Can substitute judgment cards with own hand cards
-    return { actions: [] };
+    // Simplified: draw 1 card when any judgment occurs (represents manipulating fate)
+    return { actions: [{ type: 'DRAW_CARDS', playerId: ctx.sourcePlayerId, count: 1 }] };
   },
   isMandatory: false,
 };
@@ -117,7 +123,28 @@ const skill_tuxi: SkillDefinition = {
   description: '摸牌阶段，你可以少摸任意张牌，然后选择等量的手牌数不小于你的角色，获得这些角色的各一张手牌。',
   triggers: [{ kind: 'on_draw_phase' }],
   execute: (ctx) => {
-    // Instead of drawing normally, steal from others
+    // Simplified: steal 1 card from another player with most hand cards
+    const state = ctx.gameState;
+    const player = state.players.find(p => p.id === ctx.sourcePlayerId);
+    if (!player) return { actions: [] };
+
+    const targets = state.players.filter(
+      p => p.aliveStatus !== 'dead' && p.id !== ctx.sourcePlayerId && p.hand.length > 0
+    );
+    if (targets.length === 0) return { actions: [] };
+
+    // Pick the target with the most hand cards
+    targets.sort((a, b) => b.hand.length - a.hand.length);
+    const target = targets[0];
+    const stolenCard = target.hand[target.hand.length - 1];
+
+    // Steal one card
+    const idx = target.hand.findIndex(c => c.instanceId === stolenCard.instanceId);
+    if (idx !== -1) {
+      const [card] = target.hand.splice(idx, 1);
+      player.hand.push(card);
+    }
+
     return { actions: [] };
   },
   isMandatory: false,
@@ -140,7 +167,22 @@ const skill_luoyi: SkillDefinition = {
   description: '摸牌阶段，你可以少摸一张牌，本回合使用杀或决斗造成伤害时，此伤害+1。',
   triggers: [{ kind: 'on_draw_phase' }],
   execute: (ctx) => {
-    // Trade 1 draw for +1 damage this turn
+    // Trade 1 fewer draw (discard 1 from hand) for +1 damage this turn
+    const state = ctx.gameState;
+    const player = state.players.find(p => p.id === ctx.sourcePlayerId);
+    if (!player || player.hand.length === 0) return { actions: [] };
+
+    // Discard 1 card (cancel 1 of the 2 normal draws)
+    const discardCard = player.hand[player.hand.length - 1];
+    const idx = player.hand.findIndex(c => c.instanceId === discardCard.instanceId);
+    if (idx !== -1) {
+      const [card] = player.hand.splice(idx, 1);
+      state.discardPile.push(card);
+    }
+
+    // +1 damage bonus for sha/juedou this turn
+    player.luoyiBonus = 1;
+
     return { actions: [] };
   },
   isMandatory: false,

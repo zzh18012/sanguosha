@@ -40,6 +40,9 @@ export interface PlayerState {
   isChainLinked: boolean;
   isIntoxicated: boolean;     // 酒 effect: next 杀 does +1 damage
   isTurnedOver: boolean;
+  // Skill state
+  luoyiBonus: number;          // 裸衣: +damage this turn
+  tieqiActive: boolean;        // 铁骑: next sha unblockable
   // Character selection
   selectableCharacters?: string[]; // character IDs available for selection
 }
@@ -57,6 +60,7 @@ export interface PendingAction {
     | 'respond_to_nanman'
     | 'respond_to_wanjian'
     | 'respond_to_wuxie_chain'
+    | 'wuxie_opportunity'
     | 'choose_target'
     | 'choose_card'
     | 'choose_suit'
@@ -133,6 +137,8 @@ export function createPlayerState(
     isChainLinked: false,
     isIntoxicated: false,
     isTurnedOver: false,
+    luoyiBonus: 0,
+    tieqiActive: false,
   };
 }
 

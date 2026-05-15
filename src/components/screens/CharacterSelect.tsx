@@ -2,37 +2,51 @@
 // Character selection screen
 // ============================================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGame } from '../../store/GameContext';
 import { getCharacterInfo } from '../../data/characterDefinitions';
+import type { CharacterInfo } from '../../data/characterDefinitions';
 import type { Kingdom } from '../../types/characters';
 
-const KINGDOM_COLORS: Record<Kingdom, string> = {
-  wei: '#3b5998',
-  shu: '#e74c3c',
-  wu: '#2ecc71',
-  qun: '#95a5a6',
-};
+function getKingdomChinese(kingdom: Kingdom): string {
+  switch (kingdom) {
+    case 'wei': return '魏';
+    case 'shu': return '蜀';
+    case 'wu': return '吴';
+    case 'qun': return '群';
+    default: return kingdom;
+  }
+}
 
 export function CharacterSelect() {
   const { state, dispatch } = useGame();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  if (state.gamePhase !== 'character_select') {
+  const isCharSelectPhase = state.gamePhase === 'character_select';
+  const currentPlayer = isCharSelectPhase
+    ? state.players.find(p => !p.characterId)
+    : undefined;
+
+  // Dispatch START_GAME when all players have selected
+  useEffect(() => {
+    if (isCharSelectPhase && !currentPlayer) {
+      dispatch({ type: 'START_GAME' });
+    }
+  }, [isCharSelectPhase, currentPlayer, dispatch]);
+
+  if (!isCharSelectPhase || !currentPlayer) {
     return null;
   }
 
-  // Find the next player who hasn't selected a character yet
-  const currentPlayer = state.players.find(p => !p.characterId);
-  if (!currentPlayer) {
-    // All players have selected - dispatch START_GAME
-    dispatch({ type: 'START_GAME' });
-    return null;
-  }
-
-  const availableChars = [getCharacterInfo('caocao'), getCharacterInfo('liubei'), getCharacterInfo('sunquan'), getCharacterInfo('zhangjiao'),
-    getCharacterInfo('guanyu'), getCharacterInfo('zhaoyun'), getCharacterInfo('lvbu')]
-    .filter(Boolean);
+  const allCharIds = [
+    'caocao','simayi','xiahoudun','zhangliao','xuchu','guojia','zhenji',
+    'liubei','guanyu','zhangfei','zhugeliang','zhaoyun','machao','huangyueying',
+    'sunquan','zhouyu','huanggai','lvmeng','luxun','daqiao','sunshangxiang',
+    'huatuo','lvbu','diaochan','zhangjiao','yuanshao',
+  ];
+  const availableChars = allCharIds
+    .map(id => getCharacterInfo(id))
+    .filter((c): c is CharacterInfo => c != null);
 
   const handleConfirm = () => {
     if (!selectedId) return;
@@ -46,26 +60,28 @@ export function CharacterSelect() {
       <p className="select-info">请主公 <strong>{currentPlayer.name}</strong> 选择武将</p>
 
       <div className="char-grid">
-        {availableChars.filter(Boolean).map(char => (
+        {availableChars.map(char => (
           <div
-            key={char!.id}
-            className={`char-card ${selectedId === char!.id ? 'char-selected' : ''}`}
-            style={{ borderColor: KINGDOM_COLORS[char!.kingdom] || '#666' }}
-            onClick={() => setSelectedId(char!.id)}
+            key={char.id}
+            className={`char-card ${selectedId === char.id ? 'char-selected' : ''}`}
+            style={{
+              backgroundImage: char.portraitUrl ? `url(${char.portraitUrl})` : undefined,
+            }}
+            onClick={() => setSelectedId(char.id)}
           >
-            <div className="char-portrait-bg" style={{ backgroundColor: KINGDOM_COLORS[char!.kingdom] }}>
-              {char!.name[0]}
-            </div>
-            <h3>{char!.name}</h3>
-            <p className="char-title">{char!.title}</p>
-            <p className="char-kingdom">{char!.kingdom} · HP {char!.maxHp}</p>
+            <span className={`char-kingdom-ribbon kingdom-ribbon-${char.kingdom}`}>
+              {getKingdomChinese(char.kingdom)}
+            </span>
+            <h3>{char.name}</h3>
+            <p className="char-title">{char.title}</p>
+            <p className="char-kingdom">HP {char.maxHp}</p>
             <div className="char-skills">
-              {char!.skillNames.map((s, i) => (
+              {char.skillNames.map((s, i) => (
                 <span key={i} className="skill-tag">{s}</span>
               ))}
             </div>
             <p className="char-skills-desc">
-              {char!.skillDescriptions[0]}
+              {char.skillDescriptions[0]}
             </p>
           </div>
         ))}

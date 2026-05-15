@@ -127,6 +127,18 @@ function doesTriggerMatch(
         if (action.type === 'PHASE_CHANGE' && action.phase === 'discard') return true;
         break;
 
+      case 'on_judgment_start':
+        if (action.type === 'ENTER_JUDGMENT_PHASE') return true;
+        if (action.type === 'RESOLVE_JUDGMENT') return true;
+        break;
+
+      case 'on_sha_played':
+        if (action.type === 'PLAY_CARD' && action.playerId === playerId) {
+          const playedCard = state.discardPile.find(c => c.instanceId === (action as any).cardId);
+          if (playedCard && (playedCard.subtype === 'sha' || playedCard.isFireElement || playedCard.isThunderElement)) return true;
+        }
+        break;
+
       default:
         break;
     }
@@ -195,6 +207,14 @@ export function registerCharacterSkills(characterId: string, skills: SkillDefini
 
 export function getCharacterRegistry(): Map<string, { id: string; skills: SkillDefinition[] }> {
   return characterRegistry;
+}
+
+export function playerHasSkill(state: GameState, playerId: string, skillId: string): boolean {
+  const player = findPlayer(state, playerId);
+  if (!player) return false;
+  const charReg = getCharacterRegistry();
+  const charEntry = charReg.get(player.characterId);
+  return charEntry?.skills.some(s => s.id === skillId) ?? false;
 }
 
 // Skill helper functions for use in skill executors

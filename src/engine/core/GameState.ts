@@ -116,7 +116,7 @@ export function createInitialState(config: GameConfig): GameState {
 
 // Deep clone game state (for immutable updates)
 export function cloneState(state: GameState): GameState {
-  return JSON.parse(JSON.stringify(state));
+  return structuredClone(state);
 }
 
 // Create a new state with a specific phase

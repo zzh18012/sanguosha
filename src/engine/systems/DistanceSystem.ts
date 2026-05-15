@@ -3,22 +3,25 @@
 // ============================================================
 
 import type { GameState } from '../../types/game';
-import { findPlayer, findPlayerIndex } from '../core/GameState';
+import { findPlayer } from '../core/GameState';
+import { playerHasSkill } from '../characters/SkillEngine';
 
 // Calculate the base distance between two players (seat distance, ignoring mounts)
+// Dead players are excluded from the distance calculation — they don't take up seats.
 export function getBaseDistance(state: GameState, sourceId: string, targetId: string): number {
-  const sourceIdx = findPlayerIndex(state, sourceId);
-  const targetIdx = findPlayerIndex(state, targetId);
+  if (sourceId === targetId) return 0;
+
+  // Build ordered list of alive players (preserving original seat order)
+  const alivePlayers = state.players.filter(p => p.aliveStatus !== 'dead');
+  const playerCount = alivePlayers.length;
+
+  const sourceIdx = alivePlayers.findIndex(p => p.id === sourceId);
+  const targetIdx = alivePlayers.findIndex(p => p.id === targetId);
   if (sourceIdx === -1 || targetIdx === -1) return Infinity;
 
-  const playerCount = state.players.filter(p => p.aliveStatus !== 'dead').length;
-
-  // Clockwise distance
   const clockwise = (targetIdx - sourceIdx + playerCount) % playerCount;
-  // Counter-clockwise distance
   const counterClockwise = (sourceIdx - targetIdx + playerCount) % playerCount;
 
-  // Minimum seat distance (minimum of going left or right around the table)
   return Math.min(clockwise, counterClockwise);
 }
 
@@ -41,6 +44,11 @@ export function getAttackDistance(state: GameState, sourceId: string, targetId: 
 
   // Source's -1 horse decreases distance
   if (source.equipment.minusHorse) {
+    distance -= 1;
+  }
+
+  // 马术 (Ma Chao): permanent -1 attack distance
+  if (playerHasSkill(state, sourceId, 'mashu')) {
     distance -= 1;
   }
 

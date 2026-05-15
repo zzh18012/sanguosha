@@ -11,9 +11,11 @@ import { PhaseBanner } from '../layout/PhaseBanner';
 import { GameLog } from '../log/GameLog';
 import { getCurrentPlayer, getAlivePlayers } from '../../types/game';
 import { findPlayer } from '../../engine/core/GameState';
+import { useTurnTimer } from '../../hooks/useTurnTimer';
 
 export function GameBoard() {
-  const { state } = useGame();
+  const { state, dispatch } = useGame();
+  const { remainingSec } = useTurnTimer(state, dispatch);
 
   if (state.gamePhase !== 'playing') return null;
 
@@ -48,6 +50,15 @@ export function GameBoard() {
 
   return (
     <div className="game-board">
+      {/* Quit button */}
+      <button
+        className="btn-quit-game"
+        onClick={() => { if (window.confirm('确定要退出游戏吗？')) window.location.reload(); }}
+        title="退出游戏"
+      >
+        ✕ 退出
+      </button>
+
       {/* Top: other players */}
       <div className="board-top">
         {otherPlayers.map((player) => (
@@ -68,14 +79,14 @@ export function GameBoard() {
           playerName={turnPlayer?.name || currentPlayer.name}
           isViewerTurn={isViewerTurn}
         />
-        <GameLog entries={state.actionHistory.slice(-5)} />
+        <GameLog entries={state.actionHistory} />
       </div>
 
       {/* Bottom: current viewer's area */}
       <div className="board-bottom">
         <PlayerSeat playerId={currentViewerId} position="bottom" isCurrent={isViewerTurn} />
         <HandDisplay playerId={currentViewerId} />
-        <ActionBar />
+        <ActionBar remainingSec={remainingSec} />
       </div>
     </div>
   );

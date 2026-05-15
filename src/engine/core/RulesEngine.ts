@@ -7,7 +7,7 @@ import type { GameAction } from '../../types/actions';
 import type { SkillDefinition } from '../../types/characters';
 import { findPlayer } from './GameState';
 import { isInRange, getAttackDistance } from '../systems/DistanceSystem';
-import { getCharacterRegistry, getSkill } from '../characters/SkillEngine';
+import { getCharacterRegistry, getSkill, playerHasSkill } from '../characters/SkillEngine';
 
 // Main validation entry point - returns true if the action is legal
 export function validateAction(state: GameState, action: GameAction): boolean {
@@ -30,6 +30,10 @@ export function validateAction(state: GameState, action: GameAction): boolean {
       return validatePassResponse(state, action);
     case 'PLAY_WUXIE':
       return validatePlayWuxie(state, action);
+    case 'RECAST_CARD':
+      return validateRecastCard(state, action);
+    case 'PASS_SAVE_DYING':
+      return validatePassSaveDying(state, action);
     case 'PASS_WUXIE':
       return true; // always valid
     case 'JUDGE_BAGUAZHEN':
@@ -93,9 +97,15 @@ function validatePlayCard(state: GameState, action: Extract<GameAction, { type: 
   if (cardInHand.subtype === 'sha') {
     if (player.shaUsedThisTurn) {
       const hasZhugeLiannu = player.equipment.weapon?.subtype === 'zhugeliannu';
-      if (!hasZhugeLiannu) return false;
+      const hasPaoxiao = playerHasSkill(state, action.playerId, 'paoxiao');
+      if (!hasZhugeLiannu && !hasPaoxiao) return false;
     }
     if (action.targets.length !== 1) return false;
+    // Check 空城: Zhuge Liang immune to sha when no hand cards
+    if (playerHasSkill(state, action.targets[0], 'kongcheng')) {
+      const targetPlayer = findPlayer(state, action.targets[0]);
+      if (targetPlayer && targetPlayer.hand.length === 0) return false;
+    }
     // Must be in weapon range
     if (!isInRange(state, action.playerId, action.targets[0])) return false;
   }
@@ -112,6 +122,8 @@ function validatePlayCard(state: GameState, action: Extract<GameAction, { type: 
   if (cardInHand.category === 'tool') {
     if (cardInHand.toolTiming === 'delayed') {
       // Delayed tools: placed in judgment area, not played directly
+      // 谦逊 immune to 乐不思蜀
+      if (cardInHand.subtype === 'lebu_sishu' && playerHasSkill(state, action.targets[0], 'qianxun')) return false;
       return action.targets.length === 1;
     }
     // Non-delayed tool cards
@@ -131,7 +143,12 @@ function validatePlayCard(state: GameState, action: Extract<GameAction, { type: 
       case 'shunshou_qianyang': {
         // 顺手牵羊: target at distance ≤ 1 with cards
         if (action.targets.length !== 1) return false;
-        if (getAttackDistance(state, action.playerId, action.targets[0]) > 1) return false;
+        // 谦逊 immune
+        if (playerHasSkill(state, action.targets[0], 'qianxun')) return false;
+        // 奇才: no distance limit on tool cards
+        if (!playerHasSkill(state, action.playerId, 'qicai')) {
+          if (getAttackDistance(state, action.playerId, action.targets[0]) > 1) return false;
+        }
         const t = findPlayer(state, action.targets[0]);
         return !!(t && t.id !== action.playerId && t.aliveStatus !== 'dead' &&
           (t.hand.length > 0 || Object.values(t.equipment).some(Boolean)));
@@ -139,6 +156,11 @@ function validatePlayCard(state: GameState, action: Extract<GameAction, { type: 
       case 'juedou':
         // 决斗: target any non-self alive player
         if (action.targets.length !== 1) return false;
+        // 空城 immune
+        if (playerHasSkill(state, action.targets[0], 'kongcheng')) {
+          const kongTarget = findPlayer(state, action.targets[0]);
+          if (kongTarget && kongTarget.hand.length === 0) return false;
+        }
         return action.targets[0] !== action.playerId;
       case 'nanman_ruqin':
       case 'wanjian_qifa':
@@ -178,6 +200,11 @@ function validateEquipCard(state: GameState, action: Extract<GameAction, { type:
   const player = findPlayer(state, action.playerId);
   if (!player || player.aliveStatus !== 'alive') return false;
 
+  // Must be the player's turn during play phase
+  const currentId = state.turnOrder[state.currentPlayerIndex];
+  if (currentId !== action.playerId) return false;
+  if (state.currentTurnPhase !== 'play') return false;
+
   const card = player.hand.find(c => c.instanceId === action.cardId);
   if (!card || card.category !== 'equipment') return false;
 
@@ -187,6 +214,11 @@ function validateEquipCard(state: GameState, action: Extract<GameAction, { type:
 function validateDiscardCard(state: GameState, action: Extract<GameAction, { type: 'DISCARD_CARD' }>): boolean {
   const player = findPlayer(state, action.playerId);
   if (!player) return false;
+
+  // Must be the player's turn during discard phase
+  const currentId = state.turnOrder[state.currentPlayerIndex];
+  if (currentId !== action.playerId) return false;
+  if (state.currentTurnPhase !== 'discard') return false;
 
   // Check if card is in player's hand
   const cardInHand = player.hand.find(c => c.instanceId === action.cardId);
@@ -215,6 +247,13 @@ function validateUseSkill(state: GameState, action: Extract<GameAction, { type: 
   const charReg = getCharacterRegistry();
   const charEntry = charReg.get(player.characterId);
   if (!charEntry || !charEntry.skills.some(s => s.id === action.skillId)) return false;
+
+  // 乱击: must have at least 2 cards of the same suit
+  if (action.skillId === 'luanji') {
+    const suits = ['spade', 'heart', 'club', 'diamond'] as const;
+    const hasSameSuit = suits.some(s => player.hand.filter(c => c.suit === s).length >= 2);
+    if (!hasSameSuit) return false;
+  }
 
   return true;
 }
@@ -332,6 +371,24 @@ function validateJiedaoGiveWeapon(state: GameState, action: Extract<GameAction, 
   return true;
 }
 
+function validateRecastCard(state: GameState, action: Extract<GameAction, { type: 'RECAST_CARD' }>): boolean {
+  const player = findPlayer(state, action.playerId);
+  if (!player || player.aliveStatus !== 'alive') return false;
+  const currentId = state.turnOrder[state.currentPlayerIndex];
+  if (currentId !== action.playerId) return false;
+  if (state.currentTurnPhase !== 'play') return false;
+  const card = player.hand.find(c => c.instanceId === action.cardId);
+  return !!(card && card.subtype === 'tiesuo_lianhuan');
+}
+
+function validatePassSaveDying(state: GameState, action: Extract<GameAction, { type: 'PASS_SAVE_DYING' }>): boolean {
+  if (!state.pendingAction) return false;
+  if (state.pendingAction.type !== 'use_tao_dying') return false;
+  // Only the dying player can pass on saving themselves
+  if (state.pendingAction.playerId !== action.playerId) return false;
+  return true;
+}
+
 // Get all valid actions for a player in the current state
 export function getValidActions(state: GameState, playerId: string): GameAction[] {
   const player = findPlayer(state, playerId);
@@ -382,7 +439,7 @@ export function getValidActions(state: GameState, playerId: string): GameAction[
           actions.push({ type: 'PICK_WUGU_CARD', playerId, cardId: card.instanceId });
         }
       }
-      if (state.pendingAction.type === 'respond_to_wuxie_chain') {
+      if (state.pendingAction.type === 'respond_to_wuxie_chain' || state.pendingAction.type === 'wuxie_opportunity') {
         actions.push({ type: 'PASS_WUXIE', playerId });
         // Check if player has 无懈可击
         const wuxie = player.hand.filter(c => c.subtype === 'wuxie_keji');
@@ -391,15 +448,24 @@ export function getValidActions(state: GameState, playerId: string): GameAction[
         }
       }
       if (state.pendingAction.type === 'use_tao_dying') {
+        // Dying player can use 桃/酒 on self, or pass (不救)
         const tao = player.hand.filter(c => c.subtype === 'tao');
         for (const card of tao) {
           actions.push({ type: 'USE_TAO_SELF', playerId, cardId: card.instanceId });
         }
-        // 酒 can be used for self-heal when dying (自救)
+        // 急救 (Hua Tuo): red cards can be used as 桃 outside own turn
+        // Dying player can always use 急救 on themselves
+        if (playerHasSkill(state, playerId, 'jijiu')) {
+          const redCards = player.hand.filter(c => (c.suit === 'heart' || c.suit === 'diamond') && c.subtype !== 'tao');
+          for (const card of redCards) {
+            actions.push({ type: 'USE_TAO_SELF', playerId, cardId: card.instanceId });
+          }
+        }
         const jiu = player.hand.filter(c => c.subtype === 'jiu');
         for (const card of jiu) {
           actions.push({ type: 'USE_TAO_SELF', playerId, cardId: card.instanceId });
         }
+        actions.push({ type: 'PASS_SAVE_DYING', playerId });
       }
     } else {
       // Other players might be able to play 无懈可击 or 桃
@@ -407,6 +473,14 @@ export function getValidActions(state: GameState, playerId: string): GameAction[
         const tao = player.hand.filter(c => c.subtype === 'tao');
         for (const card of tao) {
           actions.push({ type: 'USE_TAO_OTHER', playerId, cardId: card.instanceId, targetId: state.pendingAction.playerId });
+        }
+        // 急救 (Hua Tuo): red cards as 桃 outside own turn
+        const currentTurnPlayerId = state.turnOrder[state.currentPlayerIndex];
+        if (playerHasSkill(state, playerId, 'jijiu') && playerId !== currentTurnPlayerId) {
+          const redCards = player.hand.filter(c => (c.suit === 'heart' || c.suit === 'diamond') && c.subtype !== 'tao');
+          for (const card of redCards) {
+            actions.push({ type: 'USE_TAO_OTHER', playerId, cardId: card.instanceId, targetId: state.pendingAction.playerId });
+          }
         }
       }
     }
@@ -435,6 +509,10 @@ export function getValidActions(state: GameState, playerId: string): GameAction[
             actions.push({ type: 'EQUIP_CARD', playerId, cardId: card.instanceId });
           } else if (card.category === 'tool') {
             actions.push({ type: 'PLAY_CARD', playerId, cardId: card.instanceId, targets: [] });
+            // 铁索连环 can also be recast (重铸): discard to draw 1
+            if (card.subtype === 'tiesuo_lianhuan') {
+              actions.push({ type: 'RECAST_CARD', playerId, cardId: card.instanceId });
+            }
           }
         }
         // Active skills usable during play phase

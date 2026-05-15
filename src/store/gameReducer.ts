@@ -18,7 +18,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     'ENTER_JUDGMENT_PHASE', 'RESOLVE_JUDGMENT', 'PLACE_DELAYED_TOOL',
     'REMOVE_DELAYED_TOOL', 'STEAL_CARD', 'CHAIN_PLAYERS', 'TURN_OVER',
     'START_GAME', 'SELECT_CHARACTER', 'REQUEST_CHARACTER_SELECTION', 'AI_THINK',
-    'TOGGLE_CHAIN',
   ];
 
   if (!systemActions.includes(action.type)) {

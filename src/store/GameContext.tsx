@@ -10,6 +10,13 @@ import { createInitialState } from '../engine/core/GameState';
 import { getValidActions } from '../engine/core/RulesEngine';
 import type { NetworkClient } from '../network/NetworkClient';
 
+// Debug mode: expose state/dispatch on window when ?debug=1
+const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debug');
+let debugApi: any = null;
+if (isDebug) {
+  import('../debug/debugApi').then(m => { debugApi = m; });
+}
+
 interface GameContextType {
   state: GameState;
   dispatch: React.Dispatch<GameAction>;
@@ -54,11 +61,27 @@ function LocalGameProvider({ children, gameConfig }: {
 
   const validActions = useMemo(() => {
     if (state.pendingAction) {
+      // For shared-response pending types (无懈可击, 桃救援), any player can respond.
+      // Compute valid actions for the human player, not just the pending target.
+      const sharedTypes = ['wuxie_opportunity', 'respond_to_wuxie_chain', 'use_tao_dying'];
+      if (sharedTypes.includes(state.pendingAction.type)) {
+        const human = state.players.find(p => !p.isAI);
+        if (human) return getValidActions(state, human.id);
+      }
       return getValidActions(state, state.pendingAction.playerId);
     }
     const currentId = state.turnOrder[state.currentPlayerIndex];
     return getValidActions(state, currentId);
   }, [state]);
+
+  // Sync to debug API
+  useEffect(() => {
+    if (isDebug && debugApi) {
+      debugApi.setDebugState(state);
+      debugApi.setDebugDispatch(dispatch);
+      debugApi.setDebugValidActions(validActions);
+    }
+  }, [state, validActions]);
 
   return (
     <GameContext.Provider value={{ state, dispatch, validActions }}>

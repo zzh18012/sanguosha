@@ -8,7 +8,8 @@ import { useGame } from '../../store/GameContext';
 import { findPlayer } from '../../engine/core/GameState';
 import { getAlivePlayers } from '../../types/game';
 import { isInRange, getAttackDistance } from '../../engine/systems/DistanceSystem';
-import { getSkill } from '../../engine/characters/SkillEngine';
+import { getSkill, playerHasSkill } from '../../engine/characters/SkillEngine';
+import { CardFace } from '../cards/CardFace';
 import type { GameCard } from '../../types/cards';
 import type { GameAction } from '../../types/actions';
 
@@ -63,10 +64,11 @@ export function HandDisplay({ playerId }: HandDisplayProps) {
       ).map(p => p.id);
     }
 
-    // 顺手牵羊: distance ≤ 1, with cards
+    // 顺手牵羊: distance ≤ 1, with cards (奇才 ignores distance limit)
     if (card.subtype === 'shunshou_qianyang') {
+      const hasQicai = playerHasSkill(state, playerId, 'qicai');
       return others.filter(p =>
-        getAttackDistance(state, playerId, p.id) === 1 &&
+        (hasQicai || getAttackDistance(state, playerId, p.id) === 1) &&
         (p.hand.length > 0 || Object.values(p.equipment).some(Boolean))
       ).map(p => p.id);
     }
@@ -86,7 +88,7 @@ export function HandDisplay({ playerId }: HandDisplayProps) {
 
     // 铁索连环: any other alive player (select 1-2)
     if (card.subtype === 'tiesuo_lianhuan') {
-      return others.map(p => p.id);
+      return [playerId, ...others.map(p => p.id)];
     }
 
     // 乐不思蜀/兵粮寸断/闪电: any other alive player
@@ -149,6 +151,17 @@ export function HandDisplay({ playerId }: HandDisplayProps) {
     pendingPlayerId === playerId &&
     pendingType === 'wugu_pick_card';
 
+  const dyingMode = pendingType === 'use_tao_dying';
+  const isDyingPlayer = dyingMode && pendingPlayerId === playerId;
+
+  const wuxieMode =
+    pendingType === 'wuxie_opportunity' || pendingType === 'respond_to_wuxie_chain';
+
+  const isWuxieCard = (cardId: string): boolean => {
+    const card = player.hand.find(c => c.instanceId === cardId);
+    return card?.subtype === 'wuxie_keji';
+  };
+
   const hasBaguazhen =
     pendingType === 'respond_to_sha' &&
     pendingPlayerId === playerId &&
@@ -158,6 +171,56 @@ export function HandDisplay({ playerId }: HandDisplayProps) {
     if (!state.pendingAction?.validResponseCards) return false;
     return state.pendingAction.validResponseCards.includes(cardId);
   };
+
+  // Determine which cards are playable based on validActions and game state
+  const playableCardIds = useMemo(() => {
+    const ids = new Set<string>();
+    const currentPlayerId = state.turnOrder[state.currentPlayerIndex];
+    const isMyTurn = currentPlayerId === playerId;
+
+    // During own play phase: cards that appear in PLAY_CARD, EQUIP_CARD, RECAST_CARD, or USE_TAO_SELF
+    if (isMyTurn && state.currentTurnPhase === 'play' && !state.pendingAction) {
+      for (const action of validActions) {
+        if ((action.type === 'PLAY_CARD' || action.type === 'EQUIP_CARD' || action.type === 'USE_TAO_SELF' || action.type === 'RECAST_CARD') && 'cardId' in action) {
+          ids.add((action as { cardId: string }).cardId);
+        }
+      }
+    }
+
+    // During own discard phase: cards that appear in DISCARD_CARD
+    if (isMyTurn && state.currentTurnPhase === 'discard' && !state.pendingAction) {
+      for (const action of validActions) {
+        if (action.type === 'DISCARD_CARD' && 'cardId' in action) {
+          ids.add((action as { cardId: string }).cardId);
+        }
+      }
+    }
+
+    // During pending response: cards in validResponseCards
+    if (state.pendingAction?.playerId === playerId && state.pendingAction?.validResponseCards) {
+      for (const cardId of state.pendingAction.validResponseCards) {
+        ids.add(cardId);
+      }
+    }
+
+    // During use_tao_dying: 桃/酒 for dying player, 桃 for others
+    if (state.pendingAction?.type === 'use_tao_dying') {
+      for (const action of validActions) {
+        if ((action.type === 'USE_TAO_SELF' || action.type === 'USE_TAO_OTHER') && 'cardId' in action) {
+          ids.add((action as { cardId: string }).cardId);
+        }
+      }
+    }
+
+    // During wuxie mode: wuxie_keji cards
+    if (wuxieMode) {
+      for (const card of player.hand) {
+        if (card.subtype === 'wuxie_keji') ids.add(card.instanceId);
+      }
+    }
+
+    return ids;
+  }, [validActions, state, playerId, player.hand, wuxieMode]);
 
   // Extract skill actions available to this player
   const skillActions = useMemo(() => {
@@ -313,11 +376,7 @@ export function HandDisplay({ playerId }: HandDisplayProps) {
           {player.hand.map((card, i) => (
             <div key={card.instanceId} className="hand-card"
               style={{ transform: `rotate(${(i - player.hand.length / 2) * 3}deg) translateY(${Math.abs(i - player.hand.length / 2) * 3}px)` }}>
-              <div className={`mini-card card-${card.category}`}>
-                <span className="card-suit">{getSuitSymbol(card.suit)}</span>
-                <span className="card-rank">{card.rankDisplay}</span>
-                <span className="card-name">{card.name}</span>
-              </div>
+              <CardFace card={card} size="small" />
             </div>
           ))}
         </div>
@@ -359,14 +418,119 @@ export function HandDisplay({ playerId }: HandDisplayProps) {
           {player.hand.map((card, i) => (
             <div key={card.instanceId} className="hand-card"
               style={{ transform: `rotate(${(i - player.hand.length / 2) * 3}deg) translateY(${Math.abs(i - player.hand.length / 2) * 3}px)` }}>
-              <div className={`mini-card card-${card.category}`}>
-                <span className="card-suit">{getSuitSymbol(card.suit)}</span>
-                <span className="card-rank">{card.rankDisplay}</span>
-                <span className="card-name">{card.name}</span>
-              </div>
+              <CardFace card={card} size="small" />
             </div>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  // Check if a specific card should appear darkened (unplayable)
+  const shouldDarken = (cardId: string): boolean => {
+    if (wuxieMode) return !isWuxieCard(cardId);
+
+    const currentPlayerId = state.turnOrder[state.currentPlayerIndex];
+    const isMyTurn = currentPlayerId === playerId;
+    const pendingTargetsMe = state.pendingAction?.playerId === playerId;
+
+    // During use_tao_dying: only 桃/酒 (self) or 桃 (others) is playable
+    if (state.pendingAction?.type === 'use_tao_dying') {
+      return !playableCardIds.has(cardId);
+    }
+
+    // When pending action exists but doesn't target me, all cards unplayable
+    if (state.pendingAction && !pendingTargetsMe) return true;
+
+    // Pending action targets this player — use valid response cards list
+    if (pendingTargetsMe && state.pendingAction) {
+      if (state.pendingAction.validResponseCards) {
+        return !state.pendingAction.validResponseCards.includes(cardId);
+      }
+      // No validResponseCards set — fall through to playableCardIds
+      if (playableCardIds.size > 0 && !playableCardIds.has(cardId)) return true;
+      return false;
+    }
+
+    // No pending action — it's my turn, use playableCardIds
+    if (isMyTurn) {
+      if (playableCardIds.size > 0 && !playableCardIds.has(cardId)) return true;
+      return false;
+    }
+
+    // Not my turn and no pending targeting me — all cards unavailable
+    return true;
+  };
+
+  // ========== DYING MODE (濒死救援) ==========
+  if (dyingMode) {
+    const dyingPlayer = findPlayer(state, pendingPlayerId!);
+    const isSelfRescue = isDyingPlayer;
+    const selectedIsTaoOrJiu = selectedCardObj && (
+      selectedCardObj.subtype === 'tao' || (isSelfRescue && selectedCardObj.subtype === 'jiu')
+    );
+
+    return (
+      <div className="hand-display">
+        <div className="hand-cards">
+          {player.hand.map((card, i) => {
+            const darken = shouldDarken(card.instanceId);
+            return (
+              <div
+                key={card.instanceId}
+                className={`hand-card ${selectedCard === card.instanceId ? 'card-selected' : ''} ${darken ? 'card-unavailable' : ''}`}
+                style={{ transform: `rotate(${(i - player.hand.length / 2) * 3}deg) translateY(${Math.abs(i - player.hand.length / 2) * 3}px)` }}
+                onClick={() => !darken && handleCardClick(card.instanceId)}
+              >
+                <CardFace card={card} size="small" selected={selectedCard === card.instanceId} />
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="hand-actions">
+          <span className="response-hint" style={{ color: '#e74c3c' }}>
+            {isSelfRescue
+              ? '你处于濒死状态，请使用桃或酒自救'
+              : `${dyingPlayer?.name || ''} 濒死，是否使用桃救援？`}
+          </span>
+        </div>
+
+        {/* Dying player: use 桃/酒 to self-rescue, or pass */}
+        {isSelfRescue && selectedCard && selectedIsTaoOrJiu && (
+          <div className="hand-actions">
+            <button className="btn btn-sm" onClick={() => {
+              dispatch({ type: 'USE_TAO_SELF', playerId, cardId: selectedCard! });
+              setSelectedCard(null);
+            }}>
+              {selectedCardObj?.subtype === 'jiu' ? '酒救' : '使用桃'}
+            </button>
+            <button className="btn btn-sm" onClick={() => setSelectedCard(null)}>取消</button>
+          </div>
+        )}
+
+        {/* Other players: use 桃 on dying player */}
+        {!isSelfRescue && selectedCard && selectedCardObj?.subtype === 'tao' && (
+          <div className="hand-actions">
+            <button className="btn btn-sm" onClick={() => {
+              dispatch({ type: 'USE_TAO_OTHER', playerId, cardId: selectedCard!, targetId: pendingPlayerId! });
+              setSelectedCard(null);
+            }}>
+              使用桃救援
+            </button>
+            <button className="btn btn-sm" onClick={() => setSelectedCard(null)}>取消</button>
+          </div>
+        )}
+
+        {/* Invalid card selected during dying mode */}
+        {selectedCard && !selectedIsTaoOrJiu && !(!isSelfRescue && selectedCardObj?.subtype === 'tao') && (
+          <div className="hand-actions">
+            <span className="response-hint" style={{ color: '#e74c3c' }}>
+              {isSelfRescue ? '只有桃或酒可以自救' : '只有桃可以救援濒死角色'}
+            </span>
+            <button className="btn btn-sm" onClick={() => setSelectedCard(null)}>取消</button>
+          </div>
+        )}
       </div>
     );
   }
@@ -375,20 +539,19 @@ export function HandDisplay({ playerId }: HandDisplayProps) {
   return (
     <div className="hand-display">
       <div className="hand-cards">
-        {player.hand.map((card, i) => (
-          <div
-            key={card.instanceId}
-            className={`hand-card ${selectedCard === card.instanceId ? 'card-selected' : ''}`}
-            style={{ transform: `rotate(${(i - player.hand.length / 2) * 3}deg) translateY(${Math.abs(i - player.hand.length / 2) * 3}px)` }}
-            onClick={() => handleCardClick(card.instanceId)}
-          >
-            <div className={`mini-card card-${card.category}`}>
-              <span className="card-suit">{getSuitSymbol(card.suit)}</span>
-              <span className="card-rank">{card.rankDisplay}</span>
-              <span className="card-name">{card.name}</span>
+        {player.hand.map((card, i) => {
+          const darken = shouldDarken(card.instanceId);
+          return (
+            <div
+              key={card.instanceId}
+              className={`hand-card ${selectedCard === card.instanceId ? 'card-selected' : ''} ${darken ? 'card-unavailable' : ''}`}
+              style={{ transform: `rotate(${(i - player.hand.length / 2) * 3}deg) translateY(${Math.abs(i - player.hand.length / 2) * 3}px)` }}
+              onClick={() => !darken && handleCardClick(card.instanceId)}
+            >
+              <CardFace card={card} size="small" selected={selectedCard === card.instanceId} />
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Target selection mode */}
@@ -409,11 +572,15 @@ export function HandDisplay({ playerId }: HandDisplayProps) {
             >
               使用
             </button>
-            <button className="btn btn-sm btn-danger" onClick={() => {
-              dispatch({ type: 'DISCARD_CARD', playerId, cardId: selectedCard });
-              setSelectedCard(null);
-              setSelectedTargets([]);
-            }}>弃置</button>
+            {selectedCardObj?.subtype === 'tiesuo_lianhuan' && (
+              <button className="btn btn-sm btn-recast" onClick={() => {
+                dispatch({ type: 'RECAST_CARD', playerId, cardId: selectedCard! });
+                setSelectedCard(null);
+                setSelectedTargets([]);
+              }}>
+                重铸
+              </button>
+            )}
             <button className="btn btn-sm" onClick={() => { setSelectedCard(null); setSelectedTargets([]); }}>取消</button>
           </div>
         </>
@@ -425,10 +592,14 @@ export function HandDisplay({ playerId }: HandDisplayProps) {
           <button className="btn btn-sm" onClick={handlePlayCard}>
             使用
           </button>
-          <button className="btn btn-sm btn-danger" onClick={() => {
-            dispatch({ type: 'DISCARD_CARD', playerId, cardId: selectedCard });
-            setSelectedCard(null);
-          }}>弃置</button>
+          {selectedCardObj?.subtype === 'tiesuo_lianhuan' && (
+            <button className="btn btn-sm btn-recast" onClick={() => {
+              dispatch({ type: 'RECAST_CARD', playerId, cardId: selectedCard! });
+              setSelectedCard(null);
+            }}>
+              重铸
+            </button>
+          )}
           <button className="btn btn-sm" onClick={() => setSelectedCard(null)}>取消</button>
         </div>
       )}
@@ -473,8 +644,45 @@ export function HandDisplay({ playerId }: HandDisplayProps) {
         </div>
       )}
 
+      {/* Wuxie mode: play 无懈可击 button */}
+      {wuxieMode && selectedCard && isWuxieCard(selectedCard) && (
+        <div className="hand-actions">
+          <button className="btn btn-sm btn-wuxie" onClick={() => {
+            dispatch({ type: 'PLAY_WUXIE', playerId, cardId: selectedCard, againstActionType: 'any' });
+            setSelectedCard(null);
+          }}>
+            无懈可击
+          </button>
+          <button className="btn btn-sm" onClick={() => setSelectedCard(null)}>取消</button>
+        </div>
+      )}
+
+      {/* Wuxie mode: pass button (always visible) */}
+      {wuxieMode && !selectedCard && (
+        <div className="hand-actions">
+          <span className="response-hint">
+            {pendingType === 'wuxie_opportunity'
+              ? '锦囊牌打出，是否使用无懈可击抵消？'
+              : '无懈可击连锁中，是否再打出一张？'}
+          </span>
+          <button className="btn btn-sm" onClick={() => {
+            dispatch({ type: 'PASS_WUXIE', playerId });
+          }}>
+            不无懈
+          </button>
+        </div>
+      )}
+
+      {/* Wuxie mode: selected non-wuxie card (show hint) */}
+      {wuxieMode && selectedCard && !isWuxieCard(selectedCard) && (
+        <div className="hand-actions">
+          <span className="response-hint" style={{ color: '#e74c3c' }}>只有无懈可击可以在此阶段使用</span>
+          <button className="btn btn-sm" onClick={() => setSelectedCard(null)}>取消</button>
+        </div>
+      )}
+
       {/* Skill buttons for current player during play phase */}
-      {!pendingResponse && !pickMode && !jiedaoMode && !wuguMode &&
+      {!pendingResponse && !pickMode && !jiedaoMode && !wuguMode && !wuxieMode &&
         state.currentTurnPhase === 'play' && skillActions.length > 0 && (
         <div className="hand-actions">
           <span className="response-hint" style={{ fontSize: '12px', marginRight: '8px' }}>技能：</span>
@@ -494,7 +702,7 @@ export function HandDisplay({ playerId }: HandDisplayProps) {
       )}
 
       {/* End phase button */}
-      {!pendingResponse && !pickMode && !jiedaoMode && !wuguMode &&
+      {!pendingResponse && !pickMode && !jiedaoMode && !wuguMode && !wuxieMode &&
         state.currentTurnPhase === 'play' && player.hand.length <= player.hp && (
         <div className="end-phase-action">
           <button

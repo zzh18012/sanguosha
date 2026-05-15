@@ -1,0 +1,13 @@
+node_modules
+dist
+server/node_modules
+server/public
+server/dist
+.git
+.superpowers
+scripts
+*.md
+/*.png
+.env
+.env.*
+!.env.example

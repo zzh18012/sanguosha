@@ -43,7 +43,7 @@ export function aiDecide(state: GameState, playerId: string): GameAction {
 function handlePendingAction(state: GameState, playerId: string): GameAction {
   const pending = state.pendingAction!;
   const player = state.players.find(p => p.id === playerId);
-  if (!player) return { type: 'PASS_RESPONSE', playerId };
+  if (!player) return { type: 'END_TURN', playerId };
 
   if (pending.playerId !== playerId) {
     // Check if we should use 无懈可击 or 桃 on others
@@ -61,8 +61,19 @@ function handlePendingAction(state: GameState, playerId: string): GameAction {
           }
         }
       }
+      // Dying rescue — other players can only use 桃, no other valid action
+      return { type: 'END_TURN', playerId };
     }
-    return { type: 'PASS_RESPONSE', playerId };
+    // 无懈可击 windows: any player can play it
+    if (pending.type === 'wuxie_opportunity' || pending.type === 'respond_to_wuxie_chain') {
+      const wuxie = player.hand.find(c => c.subtype === 'wuxie_keji');
+      if (wuxie && Math.random() < 0.5) {
+        return { type: 'PLAY_WUXIE', playerId, cardId: wuxie.instanceId, againstActionType: 'any' };
+      }
+      return { type: 'PASS_WUXIE', playerId };
+    }
+    // Not targeted by the pending action and can't help — nothing to do
+    return { type: 'END_TURN', playerId };
   }
 
   switch (pending.type) {
@@ -95,10 +106,11 @@ function handlePendingAction(state: GameState, playerId: string): GameAction {
     }
     case 'respond_to_wuxie_chain':
       return { type: 'PASS_WUXIE', playerId };
-    case 'use_tao_dying':
-      const tao = player.hand.find(c => c.subtype === 'tao');
-      if (tao) return { type: 'USE_TAO_SELF', playerId, cardId: tao.instanceId };
-      return { type: 'PASS_RESPONSE', playerId };
+    case 'use_tao_dying': {
+      const taoSelf = player.hand.find(c => c.subtype === 'tao');
+      if (taoSelf) return { type: 'USE_TAO_SELF', playerId, cardId: taoSelf.instanceId };
+      return { type: 'PASS_SAVE_DYING', playerId };
+    }
     case 'pick_card_to_discard':
     case 'pick_card_to_steal': {
       // AI picks a random card from available cards
@@ -141,8 +153,27 @@ export function getAIPlayers(state: GameState): PlayerState[] {
 // Check if it's an AI player's turn to act
 export function getCurrentAIPlayer(state: GameState): PlayerState | null {
   if (state.pendingAction) {
-    const target = state.players.find(p => p.id === state.pendingAction!.playerId);
-    if (target?.isAI) return target;
+    const pending = state.pendingAction;
+    // Pending action's target is AI — they must respond
+    const target = state.players.find(p => p.id === pending.playerId);
+    if (target?.isAI && target.aliveStatus !== 'dead') return target;
+
+    // For shared-response pending types (无懈可击, 桃救援), other AI players can also act
+    if (pending.type === 'wuxie_opportunity' || pending.type === 'respond_to_wuxie_chain') {
+      const aiWithWuxie = state.players.find(p =>
+        p.isAI && p.aliveStatus !== 'dead' && p.hand.some(c => c.subtype === 'wuxie_keji')
+      );
+      if (aiWithWuxie) return aiWithWuxie;
+    }
+    if (pending.type === 'use_tao_dying') {
+      const aiWithTao = state.players.find(p =>
+        p.isAI && p.aliveStatus !== 'dead' && p.id !== pending.playerId && p.hand.some(c => c.subtype === 'tao')
+      );
+      if (aiWithTao) return aiWithTao;
+    }
+
+    // No AI can act on this pending action
+    return null;
   }
   const currentId = state.turnOrder[state.currentPlayerIndex];
   const current = state.players.find(p => p.id === currentId);

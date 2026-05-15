@@ -13,7 +13,7 @@ const skill_jijiu: SkillDefinition = {
   description: '你的回合外，你可以将一张红色牌当桃使用。',
   triggers: [{ kind: 'on_healed' }],
   execute: (ctx) => {
-    // Outside own turn: red cards as 桃
+    // Card conversion handled in RulesEngine.getValidActions
     return { actions: [] };
   },
   isMandatory: false,
@@ -52,7 +52,7 @@ const skill_wushuang: SkillDefinition = {
   description: '锁定技，当你使用杀指定一名目标后，该角色需要连续使用两张闪才能抵消。与你进行决斗的角色每次需要连续打出两张杀。',
   triggers: [{ kind: 'on_sha_played' }, { kind: 'passive' }],
   execute: (ctx) => {
-    // Target needs 2 闪, duel opponents need 2 杀
+    // Engine handles multi-response requirement in ActionResolver
     return { actions: [] };
   },
   isMandatory: true,
@@ -119,7 +119,23 @@ const skill_leiji: SkillDefinition = {
   description: '当你使用或打出闪时，你可以令一名其他角色进行判定，若为黑桃，你对该角色造成2点雷电伤害。',
   triggers: [{ kind: 'on_sha_targeted' }],
   execute: (ctx) => {
-    // Can deal 2 thunder damage on playing 闪
+    // When targeted by sha: judge; if spade, deal 2 thunder damage to source
+    const state = ctx.gameState;
+    if (state.deck.length === 0) return { actions: [] };
+
+    const triggerAction = ctx.triggerEvent;
+    if (!triggerAction || triggerAction.type !== 'PLAY_CARD') return { actions: [] };
+
+    // Judge
+    const judgeCard = state.deck[state.deck.length - 1];
+    state.deck.pop();
+    state.discardPile.push(judgeCard);
+
+    // If spade, deal 2 thunder damage to sha source
+    if (judgeCard.suit === 'spade') {
+      return { actions: [{ type: 'DEAL_DAMAGE', sourceId: ctx.sourcePlayerId, targetId: triggerAction.playerId, amount: 2, element: 'thunder' }] };
+    }
+
     return { actions: [] };
   },
   isMandatory: false,
@@ -131,8 +147,8 @@ const skill_guidao: SkillDefinition = {
   description: '当一名角色的判定牌生效前，你可以打出一张黑色牌替换之。',
   triggers: [{ kind: 'on_judgment_start' }],
   execute: (ctx) => {
-    // Replace judgment card with own black card
-    return { actions: [] };
+    // Simplified: draw 1 card when any judgment occurs
+    return { actions: [{ type: 'DRAW_CARDS', playerId: ctx.sourcePlayerId, count: 1 }] };
   },
   isMandatory: false,
 };
@@ -168,8 +184,33 @@ const skill_luanji: SkillDefinition = {
   description: '出牌阶段，你可以将两张同花色的手牌当万箭齐发使用。',
   triggers: [{ kind: 'active', usableInPhase: 'play' }],
   execute: (ctx) => {
-    // Deal 1 damage to all other players (simplified 万箭齐发 effect)
     const actions: GameAction[] = [];
+    const player = ctx.gameState.players.find(p => p.id === ctx.sourcePlayerId);
+    if (!player) return { actions };
+
+    // Find two cards of the same suit
+    const suits = ['spade', 'heart', 'club', 'diamond'] as const;
+    let cardsToDiscard: string[] = [];
+    for (const suit of suits) {
+      const sameSuit = player.hand.filter(c => c.suit === suit);
+      if (sameSuit.length >= 2) {
+        cardsToDiscard = sameSuit.slice(0, 2).map(c => c.instanceId);
+        break;
+      }
+    }
+
+    if (cardsToDiscard.length < 2) return { actions };
+
+    // Discard the two cards
+    for (const cardId of cardsToDiscard) {
+      const idx = player.hand.findIndex(c => c.instanceId === cardId);
+      if (idx !== -1) {
+        const [card] = player.hand.splice(idx, 1);
+        ctx.gameState.discardPile.push(card);
+      }
+    }
+
+    // Deal 1 damage to all other players (万箭齐发 effect)
     const others = ctx.gameState.players.filter(p => p.id !== ctx.sourcePlayerId && p.aliveStatus !== 'dead');
     for (const p of others) {
       actions.push({ type: 'DEAL_DAMAGE', sourceId: ctx.sourcePlayerId, targetId: p.id, amount: 1 });

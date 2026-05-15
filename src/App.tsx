@@ -12,8 +12,11 @@ import { Lobby } from './components/screens/Lobby';
 import { useAIThink } from './hooks/useAIThink';
 import { aiSelectCharacter } from './engine/ai/AIController';
 import { registerAllCharacters } from './engine/characters/generals';
+import { setApiKey, hasApiKey } from './engine/ai/LLMController';
 import type { NetworkClient } from './network/NetworkClient';
 import './styles/global.css';
+
+const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debug');
 
 // Register all character skills on app startup
 registerAllCharacters();
@@ -61,11 +64,19 @@ function GameFlow() {
   // AI thinking during gameplay (no-op in online mode since AI runs on server)
   useAIThink(state, dispatch, 1200);
 
+  const [DebugPanel, setDebugPanel] = useState<React.ComponentType | null>(null);
+  useEffect(() => {
+    if (isDebug) {
+      import('./debug/DebugPanel').then(m => setDebugPanel(() => m.DebugPanel));
+    }
+  }, []);
+
   return (
     <div className="app">
       <CharacterSelect />
       <GameBoard />
       <GameOver onRestart={() => window.location.reload()} />
+      {DebugPanel && <DebugPanel />}
     </div>
   );
 }
@@ -75,6 +86,25 @@ export default function App() {
   const [gameConfig, setGameConfig] = useState<GameConfig | OnlineConfig | null>(null);
   const [networkClient, setNetworkClient] = useState<NetworkClient | null>(null);
   const [gameKey, setGameKey] = useState(0);
+  const [showKeyInput, setShowKeyInput] = useState(false);
+  const [keyInput, setKeyInput] = useState('');
+  const [keySaved, setKeySaved] = useState(hasApiKey());
+
+  const handleSaveKey = () => {
+    const trimmed = keyInput.trim();
+    if (trimmed) {
+      setApiKey(trimmed);
+      setKeySaved(true);
+      setShowKeyInput(false);
+      setKeyInput('');
+    }
+  };
+
+  const handleClearKey = () => {
+    import('./engine/ai/LLMController').then(m => m.clearApiKey());
+    setKeySaved(false);
+    setKeyInput('');
+  };
 
   const handleStart = (cfg: GameConfig) => {
     setGameConfig(cfg);
@@ -126,6 +156,57 @@ export default function App() {
   return (
     <div className="app">
       <MainMenu onStart={handleStart} onOnlineStart={handleOnlineStart} />
+      <div style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 100 }}>
+        {!showKeyInput ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {keySaved && (
+              <span style={{ color: '#4a8', fontSize: 12 }}>LLM AI 已启用</span>
+            )}
+            <button
+              className="btn btn-sm"
+              style={{ fontSize: 11, padding: '4px 10px', background: keySaved ? '#555' : '#c9a86b', border: 'none', borderRadius: 4, color: '#fff', cursor: 'pointer' }}
+              onClick={() => setShowKeyInput(!showKeyInput)}
+            >
+              {keySaved ? '更换Key' : '设置AI Key'}
+            </button>
+            {keySaved && (
+              <button
+                className="btn btn-sm"
+                style={{ fontSize: 11, padding: '4px 10px', background: '#933', border: 'none', borderRadius: 4, color: '#fff', cursor: 'pointer' }}
+                onClick={handleClearKey}
+              >
+                清除
+              </button>
+            )}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1a1a2e', padding: '8px 12px', borderRadius: 8, border: '1px solid #333' }}>
+            <span style={{ color: '#c9a86b', fontSize: 12, whiteSpace: 'nowrap' }}>DeepSeek API Key:</span>
+            <input
+              type="password"
+              value={keyInput}
+              onChange={e => setKeyInput(e.target.value)}
+              placeholder="sk-..."
+              style={{ padding: '4px 8px', fontSize: 12, borderRadius: 4, border: '1px solid #555', background: '#111', color: '#ddd', width: 260 }}
+              onKeyDown={e => { if (e.key === 'Enter') handleSaveKey(); }}
+            />
+            <button
+              className="btn btn-sm"
+              style={{ fontSize: 11, padding: '4px 10px', background: '#c9a86b', border: 'none', borderRadius: 4, color: '#111', cursor: 'pointer' }}
+              onClick={handleSaveKey}
+            >
+              保存
+            </button>
+            <button
+              className="btn btn-sm"
+              style={{ fontSize: 11, padding: '4px 10px', background: '#444', border: 'none', borderRadius: 4, color: '#ddd', cursor: 'pointer' }}
+              onClick={() => setShowKeyInput(false)}
+            >
+              取消
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -32,7 +32,13 @@ const skill_jiang: SkillDefinition = {
   description: '主公技，当你需要使用或打出杀时，你可以令其他蜀势力角色打出一张杀（视为由你使用或打出）。',
   triggers: [{ kind: 'on_sha_played' }],
   execute: (ctx) => {
-    // Ruler skill: ask Shu officers to play 杀 for you
+    // Simplified: draw 1 card when Shu allies are present
+    const shuAllies = ctx.gameState.players.filter(
+      p => p.aliveStatus !== 'dead' && p.id !== ctx.sourcePlayerId && p.kingdom === 'shu'
+    );
+    if (shuAllies.length > 0) {
+      return { actions: [{ type: 'DRAW_CARDS', playerId: ctx.sourcePlayerId, count: 1 }] };
+    }
     return { actions: [] };
   },
   isMandatory: false,
@@ -57,7 +63,7 @@ const skill_wusheng: SkillDefinition = {
   description: '你可以将一张红色牌当杀使用或打出。',
   triggers: [{ kind: 'on_sha_played' }],
   execute: (ctx) => {
-    // Red cards can be used as 杀
+    // Card conversion handled by engine (getValidResponseCards)
     return { actions: [] };
   },
   isMandatory: false,
@@ -80,7 +86,7 @@ const skill_paoxiao: SkillDefinition = {
   description: '锁定技，你使用杀无次数限制。若你使用的杀被闪抵消，你可以摸一张牌。',
   triggers: [{ kind: 'passive' }],
   execute: (ctx) => {
-    // Unlimited 杀, draw when dodged
+    // Engine handles: unlimited sha (RulesEngine), draw on dodge (ActionResolver)
     return { actions: [] };
   },
   isMandatory: true,
@@ -117,7 +123,7 @@ const skill_kongcheng: SkillDefinition = {
   description: '锁定技，若你没有手牌，你不能成为杀或决斗的目标。',
   triggers: [{ kind: 'passive' }],
   execute: (ctx) => {
-    // Can't be targeted by 杀/决斗 when no hand
+    // Engine handles target validation in RulesEngine + ActionResolver
     return { actions: [] };
   },
   isMandatory: true,
@@ -138,9 +144,9 @@ const skill_longdan: SkillDefinition = {
   id: 'longdan',
   name: '龙胆',
   description: '你可以将一张杀当闪使用或打出，或将一张闪当杀使用或打出。',
-  triggers: [{ kind: 'on_sha_targeted' }, { kind: 'on_sha_played' }],
+  triggers: [{ kind: 'on_sha_targeted' }],
   execute: (ctx) => {
-    // 杀 ↔ 闪 interchangeability
+    // Card conversion handled by engine (getValidResponseCards)
     return { actions: [] };
   },
   isMandatory: false,
@@ -163,7 +169,7 @@ const skill_mashu: SkillDefinition = {
   description: '锁定技，你计算与其他角色的距离时始终-1。',
   triggers: [{ kind: 'passive' }],
   execute: (ctx) => {
-    // Always -1 distance (built into distance calculation)
+    // Engine handles distance calculation in DistanceSystem
     return { actions: [] };
   },
   isMandatory: true,
@@ -175,7 +181,7 @@ const skill_tieqi: SkillDefinition = {
   description: '当你使用杀指定一名目标后，你可以进行判定，若结果为红色，该角色不能使用闪响应此杀。',
   triggers: [{ kind: 'on_sha_played' }],
   execute: (ctx) => {
-    // Judge, if red → 杀 can't be dodged
+    // Judgment + unblockable effect handled inline in ActionResolver.resolvePlayCard
     return { actions: [] };
   },
   isMandatory: false,
@@ -211,7 +217,7 @@ const skill_qicai: SkillDefinition = {
   description: '锁定技，你使用锦囊牌无距离限制。',
   triggers: [{ kind: 'passive' }],
   execute: (ctx) => {
-    // No distance limit on tool cards
+    // Engine handles distance check in RulesEngine
     return { actions: [] };
   },
   isMandatory: true,

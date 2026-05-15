@@ -1,0 +1,14 @@
+# Target labels
+ uwebsockets-populate
+# Source files and their labels
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/CMakeFiles/uwebsockets-populate
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/CMakeFiles/uwebsockets-populate.rule
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/CMakeFiles/uwebsockets-populate-complete.rule
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-build.rule
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-configure.rule
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-download.rule
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-install.rule
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-mkdir.rule
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-patch.rule
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-test.rule
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/uwebsockets-subbuild/uwebsockets-populate-prefix/src/uwebsockets-populate-stamp/uwebsockets-populate-update.rule

@@ -3,72 +3,7 @@
 // ============================================================
 
 import type { GameState, Identity } from '../../types/game';
-import { cloneState, shuffleArray } from '../core/GameState';
-
-// Identity distribution based on player count
-const IDENTITY_TABLES: Record<number, Identity[]> = {
-  2: ['ruler', 'rebel'],
-  3: ['ruler', 'loyalist', 'rebel'],
-  4: ['ruler', 'loyalist', 'rebel', 'spy'],
-  5: ['ruler', 'loyalist', 'rebel', 'rebel', 'spy'],
-  6: ['ruler', 'loyalist', 'rebel', 'rebel', 'rebel', 'spy'],
-  7: ['ruler', 'loyalist', 'loyalist', 'rebel', 'rebel', 'rebel', 'spy'],
-  8: ['ruler', 'loyalist', 'loyalist', 'rebel', 'rebel', 'rebel', 'rebel', 'spy'],
-};
-
-// Assign identities to players
-export function assignIdentities(state: GameState): GameState {
-  const next = cloneState(state);
-  const playerCount = next.players.length;
-
-  const table = IDENTITY_TABLES[playerCount];
-  if (!table) {
-    // Fallback for custom player counts
-    const ids: Identity[] = ['ruler'];
-    const remaining = playerCount - 1;
-    const rebels = Math.floor(remaining * 0.5);
-    const loyalists = remaining - rebels - (playerCount >= 4 ? 1 : 0);
-    for (let i = 0; i < loyalists; i++) ids.push('loyalist');
-    for (let i = 0; i < rebels; i++) ids.push('rebel');
-    if (playerCount >= 4) ids.push('spy');
-    while (ids.length < playerCount) ids.push('rebel');
-
-    const shuffled = shuffleArray(ids.slice(0, playerCount));
-    // Ensure ruler is at position 0
-    const rulerIdx = shuffled.indexOf('ruler');
-    if (rulerIdx > 0) {
-      [shuffled[0], shuffled[rulerIdx]] = [shuffled[rulerIdx], shuffled[0]];
-    }
-
-    for (let i = 0; i < playerCount; i++) {
-      next.players[i].identity = shuffled[i];
-    }
-  } else {
-    // Use standard table, shuffle, put ruler first
-    const shuffled = shuffleArray([...table]);
-    const rulerIdx = shuffled.indexOf('ruler');
-    if (rulerIdx > 0) {
-      [shuffled[0], shuffled[rulerIdx]] = [shuffled[rulerIdx], shuffled[0]];
-    }
-
-    for (let i = 0; i < playerCount; i++) {
-      next.players[i].identity = shuffled[i];
-    }
-  }
-
-  // Ruler is always revealed, gets +1 HP
-  for (const player of next.players) {
-    if (player.identity === 'ruler') {
-      player.identityRevealed = true;
-      player.maxHp += 1;
-      player.hp = player.maxHp;
-    } else {
-      player.identityRevealed = false;
-    }
-  }
-
-  return next;
-}
+import { cloneState } from '../core/GameState';
 
 // Reveal a player's identity (on death or skill effect)
 export function revealIdentity(state: GameState, playerId: string): GameState {

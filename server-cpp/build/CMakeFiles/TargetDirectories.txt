@@ -1,0 +1,5 @@
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/CMakeFiles/sanguosha-server.dir
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/CMakeFiles/edit_cache.dir
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/CMakeFiles/rebuild_cache.dir
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/nlohmann_json-build/CMakeFiles/edit_cache.dir
+C:/Users/zzhn2/Desktop/sanguosha/server-cpp/build/_deps/nlohmann_json-build/CMakeFiles/rebuild_cache.dir

@@ -70,10 +70,10 @@ export const CARD_DEFINITIONS: CardDefinition[] = [
   c('sha_spade_6',  '雷杀', 'basic', 'sha', 'spade', 6, { thunder: true }),
   c('sha_spade_7b', '雷杀', 'basic', 'sha', 'spade', 7, { thunder: true }),
   c('sha_spade_8c', '雷杀', 'basic', 'sha', 'spade', 8, { thunder: true }),
-  c('sha_club_5',   '雷杀', 'basic', 'sha', 'club', 5, { thunder: true }),
-  c('sha_club_6',   '雷杀', 'basic', 'sha', 'club', 6, { thunder: true }),
-  c('sha_club_7',   '雷杀', 'basic', 'sha', 'club', 7, { thunder: true }),
-  c('sha_club_8',   '雷杀', 'basic', 'sha', 'club', 8, { thunder: true }),
+  c('sha_club_t5',   '雷杀', 'basic', 'sha', 'club', 5, { thunder: true }),
+  c('sha_club_t6',   '雷杀', 'basic', 'sha', 'club', 6, { thunder: true }),
+  c('sha_club_t7',   '雷杀', 'basic', 'sha', 'club', 7, { thunder: true }),
+  c('sha_club_t8',   '雷杀', 'basic', 'sha', 'club', 8, { thunder: true }),
   // 军争: 火杀 (5 cards)
   c('sha_heart_4',  '火杀', 'basic', 'sha', 'heart', 4, { fire: true }),
   c('sha_heart_7',  '火杀', 'basic', 'sha', 'heart', 7, { fire: true }),
@@ -282,8 +282,8 @@ export const STANDARD_DECK_IDS: string[] = CARD_DEFINITIONS
     && !d.id.includes('_10b') && !d.id.includes('_Jb')
     && !d.id.includes('_Qb')
     // Exclude specific expansion-only cards
-    && !['sha_spade_5', 'sha_spade_6', 'sha_club_5', 'sha_club_6',
-        'sha_club_7', 'sha_club_8', 'sha_heart_4', 'sha_heart_7',
+    && !['sha_spade_5', 'sha_spade_6', 'sha_club_t5', 'sha_club_t6',
+        'sha_club_t7', 'sha_club_t8', 'sha_heart_4', 'sha_heart_7',
         'sha_diamond_4', 'sha_diamond_5',
         'jiu_spade_3', 'jiu_spade_9', 'jiu_club_3', 'jiu_club_9', 'jiu_heart_4',
         'bingliang_spade_10', 'bingliang_club_4',

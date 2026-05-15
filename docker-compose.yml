@@ -1,0 +1,11 @@
+services:
+  sanguosha:
+    build:
+      context: .
+      dockerfile: server-cpp/Dockerfile
+    container_name: sanguosha
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production

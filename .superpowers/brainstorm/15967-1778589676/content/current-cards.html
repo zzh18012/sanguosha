@@ -1,0 +1,124 @@
+<h2>当前手牌设计 — 你想往哪个方向改进？</h2>
+<p class="subtitle">以下是游戏中玩家手牌的当前渲染效果。请选择你最想改进的方向。</p>
+
+<div class="section">
+  <h3>当前 Mini-Card（实际游戏中使用）</h3>
+  <div class="mockup">
+    <div class="mockup-header">手牌区域 — 扇形排列，悬停上浮</div>
+    <div class="mockup-body">
+      <div style="display:flex;align-items:flex-end;justify-content:center;gap:0;padding:24px 0;background:#0a0e17;border-radius:8px;">
+        <div style="width:66px;height:92px;background:linear-gradient(180deg,#faf7f0 0%,#f0ebe0 100%);border:1.5px solid #b8b0a0;border-left:3px solid #c0392b;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;margin-right:-24px;transform:rotate(-6deg) translateY(6px);font-family:serif;">
+          <span style="position:absolute;top:4px;left:6px;font-size:10px;color:#c0392b;">♠</span>
+          <span style="font-size:15px;font-weight:700;color:#1a1a2e;">A</span>
+          <span style="font-size:9px;color:#555;margin-top:2px;">杀</span>
+        </div>
+        <div style="width:66px;height:92px;background:linear-gradient(180deg,#faf7f0 0%,#f0ebe0 100%);border:1.5px solid #b8b0a0;border-left:3px solid #c0392b;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;margin-right:-24px;transform:rotate(-3deg) translateY(3px);font-family:serif;">
+          <span style="position:absolute;top:4px;left:6px;font-size:10px;color:#c0392b;">♥</span>
+          <span style="font-size:15px;font-weight:700;color:#c0392b;">7</span>
+          <span style="font-size:9px;color:#555;margin-top:2px;">闪</span>
+        </div>
+        <div style="width:66px;height:92px;background:linear-gradient(180deg,#faf7f0 0%,#f0ebe0 100%);border:1.5px solid #b8b0a0;border-left:3px solid #2980b9;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;margin-right:-24px;z-index:1;font-family:serif;">
+          <span style="position:absolute;top:4px;left:6px;font-size:10px;color:#1a1a2e;">♣</span>
+          <span style="font-size:15px;font-weight:700;color:#1a1a2e;">3</span>
+          <span style="font-size:9px;color:#555;margin-top:2px;">过河拆桥</span>
+        </div>
+        <div style="width:66px;height:92px;background:linear-gradient(180deg,#faf7f0 0%,#f0ebe0 100%);border:1.5px solid #b8b0a0;border-left:3px solid #1a8a4a;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;margin-right:-24px;transform:rotate(3deg) translateY(3px);font-family:serif;">
+          <span style="position:absolute;top:4px;left:6px;font-size:10px;color:#c0392b;">♦</span>
+          <span style="font-size:15px;font-weight:700;color:#c0392b;">5</span>
+          <span style="font-size:9px;color:#555;margin-top:2px;">诸葛连弩</span>
+        </div>
+        <div style="width:66px;height:92px;background:linear-gradient(180deg,#faf7f0 0%,#f0ebe0 100%);border:1.5px solid #b8b0a0;border-left:3px solid #2980b9;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;transform:rotate(6deg) translateY(6px);font-family:serif;">
+          <span style="position:absolute;top:4px;left:6px;font-size:10px;color:#c0392b;">♥</span>
+          <span style="font-size:15px;font-weight:700;color:#c0392b;">K</span>
+          <span style="font-size:9px;color:#555;margin-top:2px;">无懈可击</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>当前 CardFace 组件（已实现但未在游戏中使用）</h3>
+  <div class="mockup">
+    <div class="mockup-header">完整卡牌正面 — 羊皮纸纹理、角标、中央图标、标签</div>
+    <div class="mockup-body">
+      <div style="display:flex;gap:16px;justify-content:center;padding:24px 0;background:#0a0e17;border-radius:8px;">
+        <div style="width:80px;height:112px;background:linear-gradient(180deg,#fdf8ed 0%,#efe4c8 100%);border:3px solid #c8bfa0;border-left:4px solid;border-image:linear-gradient(180deg,#c0392b,#e74c3c) 1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;font-family:serif;">
+          <div style="position:absolute;top:6px;left:8px;display:flex;flex-direction:column;align-items:center;line-height:1;">
+            <span style="font-size:15px;font-weight:900;color:#c0392b;">7</span>
+            <span style="font-size:12px;color:#c0392b;">♥</span>
+          </div>
+          <span style="font-size:28px;">🛡</span>
+          <span style="font-size:14px;font-weight:900;color:#c0392b;letter-spacing:3px;">闪</span>
+          <div style="position:absolute;bottom:6px;right:8px;display:flex;flex-direction:column;align-items:center;line-height:1;transform:rotate(180deg);">
+            <span style="font-size:15px;font-weight:900;color:#c0392b;">7</span>
+            <span style="font-size:12px;color:#c0392b;">♥</span>
+          </div>
+        </div>
+        <div style="width:80px;height:112px;background:linear-gradient(180deg,#fdf8ed 0%,#efe4c8 100%);border:3px solid #c8bfa0;border-left:4px solid;border-image:linear-gradient(180deg,#2980b9,#3498db) 1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;font-family:serif;">
+          <div style="position:absolute;top:6px;left:8px;display:flex;flex-direction:column;align-items:center;line-height:1;">
+            <span style="font-size:15px;font-weight:900;color:#1a1a2e;">Q</span>
+            <span style="font-size:12px;color:#1a1a2e;">♠</span>
+          </div>
+          <span style="font-size:28px;">✦</span>
+          <span style="font-size:14px;font-weight:900;color:#1a1a2e;letter-spacing:3px;">过河拆桥</span>
+          <div style="position:absolute;bottom:6px;right:8px;display:flex;flex-direction:column;align-items:center;line-height:1;transform:rotate(180deg);">
+            <span style="font-size:15px;font-weight:900;color:#1a1a2e;">Q</span>
+            <span style="font-size:12px;color:#1a1a2e;">♠</span>
+          </div>
+        </div>
+        <div style="width:80px;height:112px;background:linear-gradient(180deg,#fdf8ed 0%,#efe4c8 100%);border:3px solid #c8bfa0;border-left:4px solid;border-image:linear-gradient(180deg,#1a8a4a,#27ae60) 1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;font-family:serif;">
+          <div style="position:absolute;top:6px;left:8px;display:flex;flex-direction:column;align-items:center;line-height:1;">
+            <span style="font-size:15px;font-weight:900;color:#c0392b;">A</span>
+            <span style="font-size:12px;color:#c0392b;">♦</span>
+          </div>
+          <span style="font-size:28px;">⚙</span>
+          <span style="font-size:14px;font-weight:900;color:#c0392b;letter-spacing:3px;">诸葛连弩</span>
+          <div style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);background:#1a8a4a;color:#fff;font-size:7px;padding:1px 6px;border-radius:4px;">武器 范围1</div>
+          <div style="position:absolute;bottom:6px;right:8px;display:flex;flex-direction:column;align-items:center;line-height:1;transform:rotate(180deg);">
+            <span style="font-size:15px;font-weight:900;color:#c0392b;">A</span>
+            <span style="font-size:12px;color:#c0392b;">♦</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="options" data-multiselect>
+  <div class="option" data-choice="realistic" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>拟真卡牌风格</h3>
+      <p>接近实体三国杀卡牌质感 — 更丰富纹理、立体阴影、边框装饰花纹</p>
+    </div>
+  </div>
+  <div class="option" data-choice="modern" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>现代简洁风格</h3>
+      <p>扁平化设计、清晰信息层级、流畅动效、适合数字屏幕阅读</p>
+    </div>
+  </div>
+  <div class="option" data-choice="classic" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>还原经典 OL 端游风格</h3>
+      <p>参照三国杀 OL 端游的卡牌 UI — 暗金边框、深邃底色、发光效果</p>
+    </div>
+  </div>
+  <div class="option" data-choice="animated" onclick="toggleSelect(this)">
+    <div class="letter">D</div>
+    <div class="content">
+      <h3>强化手牌交互动效</h3>
+      <p>保持现有设计，重点优化悬停、选中、打出、抽牌等动画过渡</p>
+    </div>
+  </div>
+  <div class="option" data-choice="full-redesign" onclick="toggleSelect(this)">
+    <div class="letter">E</div>
+    <div class="content">
+      <h3>全面重构</h3>
+      <p>从布局到视觉到动效全部重做，打造独特视觉识别</p>
+    </div>
+  </div>
+</div>
