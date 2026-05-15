@@ -38,7 +38,6 @@
   --text-muted: #4a5060;
 
   --card-width: 80px;
-  --card-height: 112px;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
@@ -967,11 +966,14 @@ body::before {
 
 /* 简化版小卡 — 用于卡牌选择器/目标牌展示 */
 .mini-card {
-  width: 66px;
-  height: 92px;
-  border-radius: 5px;
-  border: 1.5px solid #5a3e28;
-  background: linear-gradient(180deg, #faf3e0 0%, #efe0c0 100%);
+  width: 62px;
+  height: auto;
+  aspect-ratio: 62 / 87;
+  border-radius: 4px;
+  border: 1.5px solid #6b4c30;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(180,160,130,0.03) 1px, rgba(180,160,130,0.03) 2px),
+    linear-gradient(180deg, #fcf6e8 0%, #f5ebd0 15%, #faf0dc 45%, #efe0c0 75%, #f4e6cc 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -980,7 +982,7 @@ body::before {
   font-size: 10px;
   color: #2c2416;
   position: relative;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 
 .card-selected .mini-card {
@@ -992,17 +994,17 @@ body::before {
   position: absolute;
   top: 3px;
   left: 5px;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .mini-card .card-rank {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 900;
 }
 
 .mini-card .card-name {
   font-size: 9px;
-  margin-top: 3px;
+  margin-top: 2px;
   text-align: center;
   line-height: 1.2;
   letter-spacing: 0.5px;
@@ -1244,293 +1246,300 @@ body::before {
 }
 
 /* ============================================================
-   CARD FACE (Full card component) — 原作三国杀风格
+   CARD FACE — 原版三国杀实体牌面设计
+   参考：62×87mm 实体牌，竖版，花/点左上，牌名顶中，插画居中
    ============================================================ */
 
 .card-face {
   position: relative;
+  /* 仿羊皮纸纹理 */
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(255,252,240,0.6) 0%, transparent 60%),
-    radial-gradient(circle at 20% 70%, rgba(210, 180, 140, 0.15) 0%, transparent 30%),
-    radial-gradient(circle at 80% 20%, rgba(210, 180, 140, 0.1) 0%, transparent 30%),
-    linear-gradient(180deg, #faf3e0 0%, #efe0c0 20%, #f5e8d0 50%, #e8d8b0 80%, #f0e0c0 100%);
-  border: 2px solid #5a3e28;
-  border-radius: 6px;
+    repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(180,160,130,0.03) 1px, rgba(180,160,130,0.03) 2px),
+    radial-gradient(ellipse at 50% 35%, rgba(255,252,242,0.7) 0%, transparent 55%),
+    radial-gradient(circle at 25% 65%, rgba(200, 175, 130, 0.1) 0%, transparent 35%),
+    linear-gradient(180deg, #fcf6e8 0%, #f5ebd0 15%, #faf0dc 45%, #efe0c0 75%, #f4e6cc 100%);
+  border: 1.5px solid #6b4c30;
+  border-radius: 5px;
   font-family: var(--font-cn);
   cursor: default;
   user-select: none;
   box-shadow:
-    0 1px 3px rgba(0,0,0,0.3),
-    inset 0 0 0 1px rgba(255,255,255,0.15);
+    0 2px 6px rgba(0,0,0,0.35),
+    0 1px 2px rgba(0,0,0,0.2);
+  overflow: hidden;
+  aspect-ratio: 62 / 87;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 内框细线 */
+.card-inner-line {
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(107, 76, 48, 0.25);
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ---- 左上角：花色 + 点数 (竖向排列) ---- */
+.card-corner-tl {
+  position: absolute;
+  top: 7px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  z-index: 3;
+}
+
+.card-suit-symbol {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.card-rank-num {
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1;
+  margin-top: -1px;
+}
+
+/* ---- 牌名 — 顶部居中 ---- */
+.card-title {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  z-index: 3;
+}
+
+/* ---- 中央插画区 ---- */
+.card-illustration {
+  position: absolute;
+  top: 26px;
+  bottom: 22px;
+  left: 6px;
+  right: 6px;
+  border: 1px solid rgba(107, 76, 48, 0.15);
+  border-radius: 2px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
 
-/* 云纹内框 — 模拟传统边框装饰 */
-.card-inner-frame {
-  position: absolute;
-  inset: 3px;
-  border: 1px solid rgba(139, 105, 40, 0.35);
-  border-radius: 3px;
-  z-index: 1;
-  pointer-events: none;
+.card-illus-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
-/* 四角云纹装饰点 — ::before/::after on inner-frame for TL+BR, ::before/::after on card-face for TR+BL */
-.card-inner-frame::before,
-.card-inner-frame::after,
-.card-face::before,
-.card-face::after {
-  content: '';
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border: 1px solid rgba(139, 105, 40, 0.5);
-  border-radius: 1px;
-  z-index: 4;
+/* 插画区大字 — 作为牌面主体视觉 */
+.card-illus-glyph {
+  font-size: 36px;
+  font-weight: 900;
+  color: rgba(0,0,0,0.07);
+  user-select: none;
   pointer-events: none;
+  line-height: 1;
 }
-.card-inner-frame::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
-.card-inner-frame::after  { bottom: -1px; right: -1px; border-left: none; border-top: none; }
-.card-face::before         { top: 2px; right: 2px; border-left: none; border-bottom: none; }
-.card-face::after          { bottom: 2px; left: 2px; border-right: none; border-top: none; }
 
-/* 类别配色 */
+/* 类别插画区底色 */
+.card-illus-basic {
+  background: linear-gradient(180deg, rgba(180,140,110,0.08) 0%, rgba(180,140,110,0.04) 100%);
+}
+.card-illus-tool {
+  background: linear-gradient(180deg, rgba(80,80,140,0.08) 0%, rgba(80,80,140,0.04) 100%);
+}
+.card-illus-equipment {
+  background: linear-gradient(180deg, rgba(60,120,60,0.08) 0%, rgba(60,120,60,0.04) 100%);
+}
+
+/* ---- 左下：类别标注 ---- */
+.card-footer-left {
+  position: absolute;
+  bottom: 6px;
+  left: 8px;
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+  z-index: 3;
+  font-size: 7px;
+  letter-spacing: 0.5px;
+  color: rgba(0,0,0,0.35);
+  font-weight: 700;
+}
+
+.card-weapon-range {
+  color: rgba(40,80,40,0.5);
+}
+
+.card-attr-fire {
+  color: #c0392b;
+  font-weight: 900;
+}
+
+.card-attr-thunder {
+  color: #2471a3;
+  font-weight: 900;
+}
+
+/* ---- 右下角：延时沙漏 ---- */
+.card-hourglass {
+  position: absolute;
+  bottom: 4px;
+  right: 5px;
+  font-size: 10px;
+  z-index: 3;
+}
+
+/* ---- 横向牌面（延时锦囊） ---- */
+.card-landscape {
+  aspect-ratio: 87 / 62;
+}
+.card-landscape .card-corner-tl { top: 5px; left: 6px; }
+.card-landscape .card-suit-symbol { font-size: 11px; }
+.card-landscape .card-rank-num { font-size: 14px; }
+.card-landscape .card-title { top: 4px; font-size: 12px; }
+.card-landscape .card-illustration { top: 22px; bottom: 18px; left: 5px; right: 5px; }
+.card-landscape .card-illus-glyph { font-size: 28px; }
+.card-landscape .card-footer-left { bottom: 4px; left: 6px; font-size: 6px; }
+
+/* ============================================================
+   类别配色
+   ============================================================ */
 .card-type-basic {
   border-color: #6b3020;
-  background:
-    radial-gradient(ellipse at 50% 30%, rgba(255,250,240,0.6) 0%, transparent 60%),
-    radial-gradient(circle at 20% 70%, rgba(200, 160, 120, 0.15) 0%, transparent 30%),
-    radial-gradient(circle at 80% 20%, rgba(200, 160, 120, 0.1) 0%, transparent 30%),
-    linear-gradient(180deg, #faf0e0 0%, #eedcc8 20%, #f4e4d4 50%, #e6d4bc 80%, #f0e0cc 100%);
-}
-.card-type-basic .card-inner-frame {
-  border-color: rgba(120, 50, 30, 0.35);
-}
-.card-type-basic.card-face::before,
-.card-type-basic.card-face::after {
-  border-color: rgba(120, 50, 30, 0.5);
 }
 .card-type-tool {
   border-color: #3a3a6a;
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(248,248,255,0.6) 0%, transparent 60%),
-    radial-gradient(circle at 20% 70%, rgba(180, 175, 200, 0.12) 0%, transparent 30%),
-    radial-gradient(circle at 80% 20%, rgba(180, 175, 200, 0.08) 0%, transparent 30%),
-    linear-gradient(180deg, #f0f0fa 0%, #e0dff0 20%, #e8e8f4 50%, #d8d8e8 80%, #e4e4f2 100%);
-}
-.card-type-tool .card-inner-frame {
-  border-color: rgba(60, 50, 100, 0.35);
-}
-.card-type-tool.card-face::before,
-.card-type-tool.card-face::after {
-  border-color: rgba(60, 50, 100, 0.5);
+    repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(170,165,190,0.03) 1px, rgba(170,165,190,0.03) 2px),
+    radial-gradient(ellipse at 50% 35%, rgba(248,248,254,0.7) 0%, transparent 55%),
+    radial-gradient(circle at 25% 65%, rgba(170, 165, 195, 0.1) 0%, transparent 35%),
+    linear-gradient(180deg, #f6f4fa 0%, #ece8f2 15%, #f2f0f8 45%, #e6e2f0 75%, #f0ecf4 100%);
 }
 .card-type-equipment {
   border-color: #2a5a30;
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(248,255,248,0.6) 0%, transparent 60%),
-    radial-gradient(circle at 20% 70%, rgba(160, 190, 160, 0.12) 0%, transparent 30%),
-    radial-gradient(circle at 80% 20%, rgba(160, 190, 160, 0.08) 0%, transparent 30%),
-    linear-gradient(180deg, #f0f8f0 0%, #e0eee0 20%, #e8f4e8 50%, #d8e8d8 80%, #e4f0e4 100%);
-}
-.card-type-equipment .card-inner-frame {
-  border-color: rgba(40, 90, 40, 0.35);
-}
-.card-type-equipment.card-face::before,
-.card-type-equipment.card-face::after {
-  border-color: rgba(40, 90, 40, 0.5);
+    repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(150,180,150,0.03) 1px, rgba(150,180,150,0.03) 2px),
+    radial-gradient(ellipse at 50% 35%, rgba(248,254,248,0.7) 0%, transparent 55%),
+    radial-gradient(circle at 25% 65%, rgba(150, 180, 150, 0.1) 0%, transparent 35%),
+    linear-gradient(180deg, #f4f8f2 0%, #e8f0e4 15%, #eef4ec 45%, #e0eade 75%, #eaf0e6 100%);
 }
 
-/* 尺寸 */
+/* ============================================================
+   尺寸变体
+   ============================================================ */
 .card-small {
-  width: 72px;
-  height: 100px;
+  width: 62px;
+  height: auto;
 }
-.card-small .card-rank { font-size: 12px; }
-.card-small .card-suit-icon { font-size: 9px; }
-.card-small .card-type-icon { font-size: 22px; }
-.card-small .card-name-text { font-size: 10px; letter-spacing: 1.5px; }
-.card-small .card-category-tag { font-size: 7px; }
-.card-small .card-tag { font-size: 6px; padding: 1px 4px; }
-.card-small .card-top { top: 3px; left: 4px; right: 4px; }
-.card-small .card-bottom { bottom: 3px; left: 4px; right: 4px; }
+.card-small .card-suit-symbol { font-size: 10px; }
+.card-small .card-rank-num { font-size: 13px; }
+.card-small .card-title { font-size: 11px; letter-spacing: 1px; top: 5px; }
+.card-small .card-illustration { top: 20px; bottom: 18px; left: 5px; right: 5px; }
+.card-small .card-illus-glyph { font-size: 28px; }
+.card-small .card-corner-tl { top: 5px; left: 6px; }
+.card-small .card-footer-left { bottom: 4px; left: 6px; font-size: 6px; }
 
 .card-medium {
   width: var(--card-width);
-  height: var(--card-height);
+  height: auto;
 }
-.card-medium .card-rank { font-size: 16px; }
-.card-medium .card-suit-icon { font-size: 12px; }
-.card-medium .card-type-icon { font-size: 30px; }
-.card-medium .card-name-text { font-size: 13px; letter-spacing: 2px; }
-.card-medium .card-category-tag { font-size: 8px; }
+.card-medium .card-suit-symbol { font-size: 13px; }
+.card-medium .card-rank-num { font-size: 17px; }
+.card-medium .card-title { font-size: 14px; }
+.card-medium .card-illus-glyph { font-size: 36px; }
 
 .card-large {
   width: 120px;
-  height: 168px;
+  height: auto;
 }
-.card-large .card-rank { font-size: 22px; }
-.card-large .card-suit-icon { font-size: 16px; }
-.card-large .card-type-icon { font-size: 42px; }
-.card-large .card-name-text { font-size: 18px; letter-spacing: 3px; }
-.card-large .card-category-tag { font-size: 10px; }
-.card-large .card-top { top: 6px; left: 8px; right: 8px; }
-.card-large .card-bottom { bottom: 6px; left: 8px; right: 8px; }
+.card-large .card-suit-symbol { font-size: 18px; }
+.card-large .card-rank-num { font-size: 24px; }
+.card-large .card-title { font-size: 20px; letter-spacing: 3px; top: 8px; }
+.card-large .card-illustration { top: 36px; bottom: 28px; left: 8px; right: 8px; }
+.card-large .card-illus-glyph { font-size: 52px; }
+.card-large .card-corner-tl { top: 9px; left: 10px; }
+.card-large .card-footer-left { bottom: 7px; left: 10px; font-size: 10px; }
 
-/* 选中态 */
+/* ============================================================
+   选中态
+   ============================================================ */
 .card-face.card-selected {
   border-color: var(--gold);
   box-shadow:
     0 0 20px var(--gold-glow),
-    0 1px 3px rgba(0,0,0,0.3),
-    inset 0 0 8px rgba(201,165,92,0.15);
+    0 2px 8px rgba(0,0,0,0.4),
+    inset 0 0 10px rgba(201,165,92,0.12);
 }
-.card-face.card-selected .card-inner-frame {
-  border-color: rgba(201,165,92,0.5);
+.card-face.card-selected .card-inner-line {
+  border-color: rgba(201,165,92,0.45);
 }
 
-/* ---- 卡牌背面 ---- */
+/* ============================================================
+   卡牌背面 — 深红底 + 烫金"三国杀"
+   ============================================================ */
 .card-back {
   background:
-    repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(212, 168, 68, 0.06) 8px, rgba(212, 168, 68, 0.06) 10px),
-    repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(212, 168, 68, 0.06) 8px, rgba(212, 168, 68, 0.06) 10px),
-    linear-gradient(135deg, #4a0c0c 0%, #2a0505 40%, #3a0808 100%);
-  border-color: #1a0303;
+    repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(180,130,50,0.04) 6px, rgba(180,130,50,0.04) 8px),
+    repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(180,130,50,0.04) 6px, rgba(180,130,50,0.04) 8px),
+    radial-gradient(ellipse at 50% 45%, rgba(180,120,60,0.12) 0%, transparent 55%),
+    linear-gradient(180deg, #5c0e0e 0%, #3a0505 30%, #4a0808 60%, #3d0606 100%);
+  border-color: #2a0303;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.card-back .card-inner-frame {
-  border-color: rgba(201, 165, 92, 0.2);
 }
 
 .card-back-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  z-index: 2;
-}
-.card-back-text {
-  font-size: 14px;
-  color: var(--gold);
-  font-weight: 900;
-  text-shadow: 0 0 12px rgba(201, 165, 92, 0.4), 0 1px 2px rgba(0,0,0,0.6);
-  letter-spacing: 2px;
-}
-.card-medium .card-back-text { font-size: 16px; }
-
-/* ---- 内联角标 (顶部左侧 + 底部右侧翻转) ---- */
-.card-top {
   position: absolute;
-  top: 4px;
-  left: 5px;
-  right: 5px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  z-index: 3;
-}
-.card-bottom {
-  position: absolute;
-  bottom: 4px;
-  left: 5px;
-  right: 5px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  z-index: 3;
-}
-
-.card-corner-tl-inline {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1;
-}
-.card-corner-br-inline {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1;
-  transform: rotate(180deg);
-}
-
-.card-rank {
-  font-weight: 900;
-  text-shadow: 0 0 4px rgba(0,0,0,0.15);
-}
-.card-suit-icon {
-  font-weight: 400;
-}
-
-.card-name-text {
-  font-weight: 900;
-  text-align: right;
-  align-self: center;
-}
-
-.card-category-tag {
-  font-size: 8px;
-  letter-spacing: 2px;
-  color: rgba(0,0,0,0.4);
-  font-weight: 600;
-  align-self: center;
-}
-
-/* ---- 中央装饰区 ---- */
-.card-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
+  inset: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.card-type-icon {
-  display: block;
-  opacity: 0.25;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-
-/* 装饰分隔线 — 用中央区域下方的横线 */
-.card-center::after {
-  content: '';
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(139, 105, 40, 0.15), transparent);
-}
-
-/* ---- 属性徽章 ---- */
-.card-badges {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 3px;
   z-index: 2;
 }
-.card-tag {
-  font-size: 7px;
-  padding: 1px 5px;
-  border-radius: 6px;
-  white-space: nowrap;
-  letter-spacing: 0.5px;
-  font-weight: 600;
+
+.card-back-border {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid rgba(201, 165, 92, 0.3);
+  border-radius: 2px;
+  pointer-events: none;
 }
 
-.equip-tag { background: rgba(46, 150, 80, 0.18); color: #1a5a2a; border: 1px solid rgba(46, 150, 80, 0.3); }
-.delayed-tag { background: rgba(140, 80, 160, 0.18); color: #603080; border: 1px solid rgba(140, 80, 160, 0.3); }
-.fire-tag { background: rgba(220, 60, 40, 0.18); color: #a03020; border: 1px solid rgba(220, 60, 40, 0.3); }
-.thunder-tag { background: rgba(50, 140, 210, 0.18); color: #1a5090; border: 1px solid rgba(50, 140, 210, 0.3); }
+.card-back-centerpiece {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-back-logo {
+  font-size: 22px;
+  color: var(--gold);
+  font-weight: 900;
+  letter-spacing: 6px;
+  text-shadow: 0 0 16px rgba(201,165,92,0.5), 0 1px 3px rgba(0,0,0,0.8);
+}
+
+.card-back-eng {
+  font-size: 7px;
+  color: rgba(201,165,92,0.5);
+  letter-spacing: 3px;
+  font-weight: 600;
+}
 
 /* 花色颜色 */
 .red { color: #c0392b; }
@@ -1818,7 +1827,6 @@ body::before {
 @media (max-width: 768px) {
   :root {
     --card-width: 60px;
-    --card-height: 84px;
   }
 
   .game-title {
@@ -1838,7 +1846,6 @@ body::before {
 
   .mini-card {
     width: 54px;
-    height: 74px;
   }
 
   .mini-card .card-rank { font-size: 13px; }
