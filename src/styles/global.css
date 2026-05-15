@@ -1272,8 +1272,8 @@ body::before {
   flex-direction: column;
 }
 
-/* 内框细线 */
-.card-inner-line {
+/* 内框装饰线 */
+.card-inner-border {
   position: absolute;
   inset: 4px;
   border: 1px solid rgba(107, 76, 48, 0.25);
@@ -1282,50 +1282,48 @@ body::before {
   z-index: 1;
 }
 
-/* ---- 左上角：花色 + 点数 (竖向排列) ---- */
-.card-corner-tl {
+/* ---- 顶栏：花色点数 + 牌名 ---- */
+.card-top-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 6px 2px;
+  z-index: 2;
+}
+
+/* 左上角：花色 + 点数 (竖向排列) */
+.card-corner {
   position: absolute;
-  top: 7px;
-  left: 8px;
+  top: 4px;
+  left: 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
   line-height: 1;
-  z-index: 3;
 }
 
-.card-suit-symbol {
-  font-size: 13px;
-  line-height: 1;
-}
+.card-suit { font-size: 13px; line-height: 1; }
+.card-rank { font-size: 17px; font-weight: 900; line-height: 1; margin-top: -1px; }
 
-.card-rank-num {
-  font-size: 17px;
-  font-weight: 900;
-  line-height: 1;
-  margin-top: -1px;
-}
+.suit-red { color: #c0392b; }
+.suit-black { color: #1a1a2e; }
 
-/* ---- 牌名 — 顶部居中 ---- */
-.card-title {
-  position: absolute;
-  top: 6px;
-  left: 0;
-  right: 0;
-  text-align: center;
+/* 牌名徽章 — 顶部居中，【】格式 */
+.card-name-badge {
   font-size: 14px;
   font-weight: 900;
   letter-spacing: 2px;
-  z-index: 3;
 }
 
-/* ---- 中央插画区 ---- */
-.card-illustration {
-  position: absolute;
-  top: 26px;
-  bottom: 22px;
-  left: 6px;
-  right: 6px;
+.name-basic     { color: #4a2010; }
+.name-tool      { color: #1a1a3a; }
+.name-equipment { color: #1a3a1a; }
+
+/* ---- 中央插画区 — 牌面主体，flex-grow 占据剩余全部空间 ---- */
+.card-art {
+  flex: 1;
+  margin: 3px 6px;
   border: 1px solid rgba(107, 76, 48, 0.15);
   border-radius: 2px;
   z-index: 2;
@@ -1333,99 +1331,103 @@ body::before {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  position: relative;
 }
 
-.card-illus-inner {
+.card-art-inner {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   height: 100%;
+  position: relative;
 }
 
-/* 插画区大字 — 作为牌面主体视觉 */
-.card-illus-glyph {
+/* 属性角标 — 火/雷/延时，位于插画区右上角 */
+.art-attr-tag {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 8px;
+  font-weight: 900;
+  padding: 0 3px;
+  border-radius: 2px;
+  letter-spacing: 0.5px;
+  z-index: 1;
+  line-height: 1.3;
+}
+
+.fire-tag-2    { color: #c0392b; background: rgba(192,57,43,0.10); border: 1px solid rgba(192,57,43,0.25); }
+.thunder-tag-2 { color: #2471a3; background: rgba(36,113,163,0.10); border: 1px solid rgba(36,113,163,0.25); }
+.delay-tag-2   { color: #7d3c98; background: rgba(125,60,152,0.10); border: 1px solid rgba(125,60,152,0.25); }
+
+/* 插画主体大字 — 水印式半透明，作为牌面核心视觉 */
+.card-art-char {
   font-size: 36px;
   font-weight: 900;
-  color: rgba(0,0,0,0.07);
+  color: rgba(0,0,0,0.06);
   user-select: none;
   pointer-events: none;
   line-height: 1;
 }
 
-/* 类别插画区底色 */
-.card-illus-basic {
-  background: linear-gradient(180deg, rgba(180,140,110,0.08) 0%, rgba(180,140,110,0.04) 100%);
-}
-.card-illus-tool {
-  background: linear-gradient(180deg, rgba(80,80,140,0.08) 0%, rgba(80,80,140,0.04) 100%);
-}
-.card-illus-equipment {
-  background: linear-gradient(180deg, rgba(60,120,60,0.08) 0%, rgba(60,120,60,0.04) 100%);
-}
+/* 插画区类别底色微调 */
+.card-art-basic     { background: linear-gradient(180deg, rgba(180,140,110,0.10) 0%, rgba(180,140,110,0.02) 100%); }
+.card-art-tool      { background: linear-gradient(180deg, rgba(80,80,140,0.10) 0%, rgba(80,80,140,0.02) 100%); }
+.card-art-equipment { background: linear-gradient(180deg, rgba(60,120,60,0.10) 0%, rgba(60,120,60,0.02) 100%); }
 
-/* ---- 左下：类别标注 ---- */
-.card-footer-left {
-  position: absolute;
-  bottom: 6px;
-  left: 8px;
+/* ---- 底栏：类别标签 + 效果描述 ---- */
+.card-bottom-area {
   display: flex;
+  align-items: flex-start;
   gap: 4px;
-  align-items: baseline;
-  z-index: 3;
+  padding: 2px 6px 5px;
+  z-index: 2;
+}
+
+.card-type-tag {
   font-size: 7px;
-  letter-spacing: 0.5px;
-  color: rgba(0,0,0,0.35);
   font-weight: 700;
+  color: rgba(0,0,0,0.35);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.card-weapon-range {
-  color: rgba(40,80,40,0.5);
+.card-desc {
+  font-size: 7px;
+  color: rgba(0,0,0,0.40);
+  line-height: 1.35;
+  flex: 1;
+  min-width: 0;
 }
 
-.card-attr-fire {
-  color: #c0392b;
-  font-weight: 900;
-}
-
-.card-attr-thunder {
-  color: #2471a3;
-  font-weight: 900;
-}
-
-/* ---- 右下角：延时沙漏 ---- */
-.card-hourglass {
-  position: absolute;
-  bottom: 4px;
-  right: 5px;
-  font-size: 10px;
-  z-index: 3;
-}
-
-/* ---- 横向牌面（延时锦囊） ---- */
+/* ---- 横向牌面（延时锦囊：乐不思蜀/兵粮寸断/闪电） ---- */
 .card-landscape {
   aspect-ratio: 87 / 62;
 }
-.card-landscape .card-corner-tl { top: 5px; left: 6px; }
-.card-landscape .card-suit-symbol { font-size: 11px; }
-.card-landscape .card-rank-num { font-size: 14px; }
-.card-landscape .card-title { top: 4px; font-size: 12px; }
-.card-landscape .card-illustration { top: 22px; bottom: 18px; left: 5px; right: 5px; }
-.card-landscape .card-illus-glyph { font-size: 28px; }
-.card-landscape .card-footer-left { bottom: 4px; left: 6px; font-size: 6px; }
+.card-landscape .card-top-area { padding: 4px 4px 1px; }
+.card-landscape .card-corner { top: 2px; left: 4px; }
+.card-landscape .card-suit { font-size: 11px; }
+.card-landscape .card-rank { font-size: 14px; }
+.card-landscape .card-name-badge { font-size: 12px; letter-spacing: 1px; }
+.card-landscape .card-art { margin: 2px 4px; }
+.card-landscape .card-art-char { font-size: 28px; }
+.card-landscape .card-bottom-area { padding: 1px 4px 4px; }
+.card-landscape .card-type-tag { font-size: 6px; }
+.card-landscape .card-desc { font-size: 6px; }
+.card-landscape .art-attr-tag { font-size: 7px; }
 
 /* ============================================================
    类别配色
    ============================================================ */
-.card-type-basic {
-  border-color: #6b3020;
-}
+.card-type-basic { border-color: #6b3020; }
 .card-type-tool {
   border-color: #3a3a6a;
   background:
     repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(170,165,190,0.03) 1px, rgba(170,165,190,0.03) 2px),
     radial-gradient(ellipse at 50% 35%, rgba(248,248,254,0.7) 0%, transparent 55%),
-    radial-gradient(circle at 25% 65%, rgba(170, 165, 195, 0.1) 0%, transparent 35%),
+    radial-gradient(circle at 25% 65%, rgba(170,165,195,0.1) 0%, transparent 35%),
     linear-gradient(180deg, #f6f4fa 0%, #ece8f2 15%, #f2f0f8 45%, #e6e2f0 75%, #f0ecf4 100%);
 }
 .card-type-equipment {
@@ -1433,45 +1435,54 @@ body::before {
   background:
     repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(150,180,150,0.03) 1px, rgba(150,180,150,0.03) 2px),
     radial-gradient(ellipse at 50% 35%, rgba(248,254,248,0.7) 0%, transparent 55%),
-    radial-gradient(circle at 25% 65%, rgba(150, 180, 150, 0.1) 0%, transparent 35%),
+    radial-gradient(circle at 25% 65%, rgba(150,180,150,0.1) 0%, transparent 35%),
     linear-gradient(180deg, #f4f8f2 0%, #e8f0e4 15%, #eef4ec 45%, #e0eade 75%, #eaf0e6 100%);
 }
 
 /* ============================================================
-   尺寸变体
+   尺寸变体 — flex 自适应 + 字体缩放
    ============================================================ */
 .card-small {
   width: 62px;
   height: auto;
 }
-.card-small .card-suit-symbol { font-size: 10px; }
-.card-small .card-rank-num { font-size: 13px; }
-.card-small .card-title { font-size: 11px; letter-spacing: 1px; top: 5px; }
-.card-small .card-illustration { top: 20px; bottom: 18px; left: 5px; right: 5px; }
-.card-small .card-illus-glyph { font-size: 28px; }
-.card-small .card-corner-tl { top: 5px; left: 6px; }
-.card-small .card-footer-left { bottom: 4px; left: 6px; font-size: 6px; }
+.card-small .card-top-area { padding: 4px 4px 1px; }
+.card-small .card-corner { top: 3px; left: 4px; }
+.card-small .card-suit { font-size: 10px; }
+.card-small .card-rank { font-size: 13px; }
+.card-small .card-name-badge { font-size: 11px; letter-spacing: 1px; }
+.card-small .card-art { margin: 2px 4px; }
+.card-small .card-art-char { font-size: 28px; }
+.card-small .card-bottom-area { padding: 1px 4px 4px; }
+.card-small .card-type-tag { font-size: 6px; }
+.card-small .card-desc { font-size: 6px; }
+.card-small .art-attr-tag { font-size: 6px; }
 
 .card-medium {
   width: var(--card-width);
   height: auto;
 }
-.card-medium .card-suit-symbol { font-size: 13px; }
-.card-medium .card-rank-num { font-size: 17px; }
-.card-medium .card-title { font-size: 14px; }
-.card-medium .card-illus-glyph { font-size: 36px; }
+.card-medium .card-suit { font-size: 13px; }
+.card-medium .card-rank { font-size: 17px; }
+.card-medium .card-name-badge { font-size: 14px; }
+.card-medium .card-art-char { font-size: 36px; }
 
 .card-large {
   width: 120px;
   height: auto;
 }
-.card-large .card-suit-symbol { font-size: 18px; }
-.card-large .card-rank-num { font-size: 24px; }
-.card-large .card-title { font-size: 20px; letter-spacing: 3px; top: 8px; }
-.card-large .card-illustration { top: 36px; bottom: 28px; left: 8px; right: 8px; }
-.card-large .card-illus-glyph { font-size: 52px; }
-.card-large .card-corner-tl { top: 9px; left: 10px; }
-.card-large .card-footer-left { bottom: 7px; left: 10px; font-size: 10px; }
+.card-large .card-top-area { padding: 8px 8px 3px; }
+.card-large .card-corner { top: 6px; left: 8px; }
+.card-large .card-suit { font-size: 18px; }
+.card-large .card-rank { font-size: 24px; }
+.card-large .card-name-badge { font-size: 20px; letter-spacing: 3px; }
+.card-large .card-art { margin: 4px 8px; }
+.card-large .card-art-char { font-size: 52px; }
+.card-large .card-bottom-area { padding: 3px 8px 6px; }
+.card-large .card-type-tag { font-size: 10px; }
+.card-large .card-desc { font-size: 10px; }
+.card-large .art-attr-tag { font-size: 10px; }
+.card-large .card-inner-border { inset: 6px; }
 
 /* ============================================================
    选中态
@@ -1483,7 +1494,7 @@ body::before {
     0 2px 8px rgba(0,0,0,0.4),
     inset 0 0 10px rgba(201,165,92,0.12);
 }
-.card-face.card-selected .card-inner-line {
+.card-face.card-selected .card-inner-border {
   border-color: rgba(201,165,92,0.45);
 }
 
@@ -1504,29 +1515,24 @@ body::before {
 
 .card-back-inner {
   position: absolute;
-  inset: 6px;
+  inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   z-index: 2;
 }
 
-.card-back-border {
+.card-back-frame {
   position: absolute;
-  inset: 0;
-  border: 1.5px solid rgba(201, 165, 92, 0.3);
+  inset: 5px;
+  border: 1.5px solid rgba(201,165,92,0.30);
   border-radius: 2px;
   pointer-events: none;
 }
 
-.card-back-centerpiece {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.card-back-logo {
+.card-back-emblem {
   font-size: 22px;
   color: var(--gold);
   font-weight: 900;
@@ -1541,9 +1547,14 @@ body::before {
   font-weight: 600;
 }
 
-/* 花色颜色 */
-.red { color: #c0392b; }
-.black { color: #1a1a2e; }
+.card-back-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(201,165,92,0.06) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(201,165,92,0.03) 8px, rgba(201,165,92,0.03) 9px);
+}
 
 /* ============================================================
    CHARACTER PORTRAIT — 武将头像横幅

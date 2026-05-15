@@ -1,7 +1,17 @@
 // ============================================================
-// CardFace — 还原三国杀实体卡牌原版设计
-// 参考：62×87mm 实体牌，竖向，花/点左上，牌名居中，
-//       中央插画区为主体，左下类别标注
+// CardFace — 还原三国杀实体卡牌原版牌面设计
+//
+//  布局参考:
+//  ┌─────────────────────────┐
+//  │ ♠7       【杀】         │  顶栏: 左角(花色+点数) + 牌名
+//  │  ┌───────────────────┐  │
+//  │  │                   │  │
+//  │  │     中央插画      │  │  主体: 插画区(占卡面60%+)
+//  │  │                   │  │
+//  │  └───────────────────┘  │
+//  │  对你攻击范围内的一名   │  底栏: 效果描述
+//  │  其他角色使用...       │
+//  └─────────────────────────┘
 // ============================================================
 
 import type { GameCard } from '../../types/cards';
@@ -15,7 +25,7 @@ interface CardFaceProps {
 
 export function CardFace({ card, size = 'medium', onClick, selected }: CardFaceProps) {
   const suitSymbol = getSuitSymbol(card.suit);
-  const suitColor = card.suit === 'heart' || card.suit === 'diamond' ? 'red' : 'black';
+  const isRed = card.suit === 'heart' || card.suit === 'diamond';
   const isDelayed = card.toolTiming === 'delayed';
 
   return (
@@ -23,59 +33,51 @@ export function CardFace({ card, size = 'medium', onClick, selected }: CardFaceP
       className={`card-face card-${size} card-type-${card.category} ${isDelayed ? 'card-landscape' : ''} ${selected ? 'card-selected' : ''}`}
       onClick={onClick}
     >
-      {/* 内框细线 */}
-      <div className="card-inner-line" />
+      {/* 内框 */}
+      <div className="card-inner-border" />
 
-      {/* 左上角：花色 + 点数 (竖向排列) */}
-      <div className="card-corner-tl">
-        <span className={`card-suit-symbol ${suitColor}`}>{suitSymbol}</span>
-        <span className={`card-rank-num ${suitColor}`}>{card.rankDisplay}</span>
-      </div>
-
-      {/* 牌名 — 顶部居中 */}
-      <div className={`card-title ${suitColor}`}>
-        {card.name}
-      </div>
-
-      {/* 中央插画区 */}
-      <div className={`card-illustration card-illus-${card.category}`}>
-        <div className="card-illus-inner">
-          <span className="card-illus-glyph">{getCardGlyph(card)}</span>
+      {/* ═══ 顶栏: 花色点数 + 牌名 ═══ */}
+      <div className="card-top-area">
+        <div className={`card-corner suit-${isRed ? 'red' : 'black'}`}>
+          <span className="card-suit">{suitSymbol}</span>
+          <span className="card-rank">{card.rankDisplay}</span>
+        </div>
+        <div className={`card-name-badge name-${card.category}`}>
+          【{card.name}】
         </div>
       </div>
 
-      {/* 左下类别标注 */}
-      <div className="card-footer-left">
-        {/* 武器攻击范围 */}
-        {card.equipSlot === 'weapon' && card.weaponRange && (
-          <span className="card-weapon-range">攻击范围 {card.weaponRange}</span>
-        )}
-        {/* 类别 */}
-        <span className="card-type-label">
-          {getCategoryLabel(card)}
-        </span>
-        {/* 属性 */}
-        {card.isFireElement && <span className="card-attr-fire">火</span>}
-        {card.isThunderElement && <span className="card-attr-thunder">雷</span>}
+      {/* ═══ 中央插画区 — 主体 ═══ */}
+      <div className={`card-art card-art-${card.category}`}>
+        <div className="card-art-inner">
+          {card.isFireElement && <span className="art-attr-tag fire-tag-2">火</span>}
+          {card.isThunderElement && <span className="art-attr-tag thunder-tag-2">雷</span>}
+          {card.toolTiming === 'delayed' && <span className="art-attr-tag delay-tag-2">延时</span>}
+          <span className="card-art-char">{getArtChar(card)}</span>
+        </div>
       </div>
 
-      {/* 右下角：延时锦囊沙漏标记 */}
-      {isDelayed && (
-        <div className="card-hourglass">⏳</div>
-      )}
+      {/* ═══ 底栏: 类别 + 描述 ═══ */}
+      <div className="card-bottom-area">
+        <span className="card-type-tag">
+          {getTypeTag(card)}
+        </span>
+        <span className="card-desc">{getCardDesc(card)}</span>
+      </div>
     </div>
   );
 }
+
+// ---------- CardBack ----------
 
 export function CardBack() {
   return (
     <div className="card-face card-medium card-back">
       <div className="card-back-inner">
-        <div className="card-back-border" />
-        <div className="card-back-centerpiece">
-          <span className="card-back-logo">三国杀</span>
-          <span className="card-back-eng">S A N G U O S H A</span>
-        </div>
+        <div className="card-back-frame" />
+        <div className="card-back-emblem">三国杀</div>
+        <div className="card-back-eng">S A N G U O S H A</div>
+        <div className="card-back-pattern" />
       </div>
     </div>
   );
@@ -93,68 +95,92 @@ function getSuitSymbol(suit: string): string {
   }
 }
 
-function getCategoryLabel(card: GameCard): string {
-  if (card.category === 'basic') return '基本牌';
-  if (card.equipSlot === 'weapon') return '装备·武器';
+function getTypeTag(card: GameCard): string {
+  if (card.equipSlot === 'weapon') return `装备·武器${card.weaponRange ? ` 范围${card.weaponRange}` : ''}`;
   if (card.equipSlot === 'armor') return '装备·防具';
-  if (card.equipSlot === 'plusHorse') return '装备·+1坐骑';
-  if (card.equipSlot === 'minusHorse') return '装备·-1坐骑';
+  if (card.equipSlot === 'plusHorse') return '装备·防御马';
+  if (card.equipSlot === 'minusHorse') return '装备·进攻马';
   if (card.category === 'equipment') return '装备牌';
   if (card.toolTiming === 'delayed') return '锦囊·延时';
-  return '锦囊牌';
+  if (card.category === 'tool') return '锦囊牌';
+  return '';
 }
 
-function getCardGlyph(card: GameCard): string {
+function getCardDesc(card: GameCard): string {
+  // Basic cards
+  if (card.subtype === 'sha')
+    return '对你攻击范围内的一名角色使用，对其造成1点伤害。';
+  if (card.subtype === 'huosha')
+    return '对你攻击范围内的一名角色使用，对其造成1点火焰伤害。';
+  if (card.subtype === 'leisha')
+    return '对你攻击范围内的一名角色使用，对其造成1点雷电伤害。';
+  if (card.subtype === 'shan')
+    return '抵消一张【杀】的效果。';
+  if (card.subtype === 'tao')
+    return '回复1点体力。濒死状态时可以对自己使用，回复1点体力。';
+  if (card.subtype === 'jiu')
+    return '本回合下一张【杀】伤害+1。濒死状态时可以对自己使用，回复1点体力。';
+
+  // Tool cards
+  if (card.subtype === 'guohe_chaiqiao')
+    return '弃置一名其他角色区域内的一张牌。';
+  if (card.subtype === 'shunshou_qianyang')
+    return '获得一名距离1以内其他角色区域内的一张牌。';
+  if (card.subtype === 'wuzhong_shengyou')
+    return '摸两张牌。';
+  if (card.subtype === 'wuxie_keji')
+    return '抵消一张锦囊牌的效果。';
+  if (card.subtype === 'juedou')
+    return '与一名其他角色拼点，若你赢，对其造成1点伤害。';
+  if (card.subtype === 'nanman_ruqin')
+    return '所有其他角色需打出一张【杀】，否则受到1点伤害。';
+  if (card.subtype === 'wanjian_qifa')
+    return '所有其他角色需打出一张【闪】，否则受到1点伤害。';
+  if (card.subtype === 'taoyuan_jieyi')
+    return '所有角色回复1点体力。';
+  if (card.subtype === 'wugu_fengdeng')
+    return '亮出牌堆顶等于角色数的牌，每人获得一张。';
+  if (card.subtype === 'jiedao_sharen')
+    return '令一名装备武器的角色对另一名角色使用【杀】，否则将其武器交给你。';
+  if (card.subtype === 'tiesuo_lianhuan')
+    return '将一至两名角色横置或重置。';
+  if (card.subtype === 'lebu_sishu')
+    return '判定：若不为红桃，目标跳过出牌阶段。';
+  if (card.subtype === 'bingliang_cunduan')
+    return '判定：若不为梅花，目标跳过摸牌阶段。';
+  if (card.subtype === 'shandian')
+    return '判定：若为黑桃2-9，目标受到3点雷电伤害。';
+
+  // Equipment
+  if (card.subtype === 'zhugeliannu') return '锁定技，你使用【杀】无次数限制。';
+  if (card.subtype === 'qinggangjian') return '锁定技，你使用的【杀】无视目标防具。';
+  if (card.subtype === 'zhangbashemao') return '你可以将两张牌当【杀】使用或打出。';
+  if (card.subtype === 'guanshifu') return '你使用的【杀】被抵消后，可弃置两张牌令其强制命中。';
+  if (card.subtype === 'qinglongyanyuedao') return '你使用的【杀】被抵消后，可立即再出一张【杀】。';
+  if (card.subtype === 'qilingong') return '你使用的【杀】无距离限制。';
+  if (card.subtype === 'hanbingjian') return '你使用的【杀】被抵消后，可弃置目标两张牌。';
+  if (card.subtype === 'gudingdao') return '锁定技，对手无手牌时，你使用的【杀】伤害+1。';
+  if (card.subtype === 'zhuqueyushan') return '你可以将【杀】当【火杀】使用。';
+  if (card.subtype === 'baguazhen') return '当你需要使用【闪】时，可进行判定：若为红色，视为打出【闪】。';
+  if (card.subtype === 'renwangdun') return '锁定技，黑色的【杀】对你无效。';
+  if (card.subtype === 'tengjia') return '锁定技，【南蛮入侵】、【万箭齐发】对你无效。受到火焰伤害时+1。';
+  if (card.subtype === 'baiyinshizi') return '锁定技，你受到的伤害始终为1。失去装备区里的此牌时回复1点体力。';
+
+  return '';
+}
+
+function getArtChar(card: GameCard): string {
   if (card.category === 'basic') {
     switch (card.subtype) {
-      case 'sha':
-        if (card.isFireElement) return '火';
-        if (card.isThunderElement) return '雷';
-        return '杀';
-      case 'shan': return '闪';
+      case 'sha': return card.isFireElement ? '火殺' : card.isThunderElement ? '雷殺' : '殺';
+      case 'shan': return '閃';
       case 'tao': return '桃';
       case 'jiu': return '酒';
       default: return card.name;
     }
   }
   if (card.category === 'equipment') {
-    switch (card.subtype) {
-      case 'zhugeliannu': return '弩';
-      case 'qinggangjian': return '剑';
-      case 'zhangbashemao': return '矛';
-      case 'guanshifu': return '斧';
-      case 'qinglongyanyuedao': return '刀';
-      case 'qilingong': return '弓';
-      case 'hanbingjian': return '冰';
-      case 'gudingdao': return '锭';
-      case 'zhuqueyushan': return '扇';
-      case 'baguazhen': return '阵';
-      case 'renwangdun': return '盾';
-      case 'tengjia': return '甲';
-      case 'baiyinshizi': return '狮';
-      case 'dilu': case 'jueying': case 'zhaohuangfeidian': case 'hualiu':
-        return '马';
-      case 'dawan': case 'chitu': case 'zixing':
-        return '马';
-      default: return '装';
-    }
+    return card.name;
   }
-  // Tool cards
-  switch (card.subtype) {
-    case 'guohe_chaiqiao': return '拆';
-    case 'shunshou_qianyang': return '牵';
-    case 'wuzhong_shengyou': return '无';
-    case 'wuxie_keji': return '懈';
-    case 'juedou': return '斗';
-    case 'nanman_ruqin': return '蛮';
-    case 'wanjian_qifa': return '万';
-    case 'taoyuan_jieyi': return '园';
-    case 'wugu_fengdeng': return '谷';
-    case 'jiedao_sharen': return '刀';
-    case 'tiesuo_lianhuan': return '锁';
-    case 'lebu_sishu': return '乐';
-    case 'bingliang_cunduan': return '兵';
-    case 'shandian': return '电';
-    default: return '锦';
-  }
+  return card.name;
 }
